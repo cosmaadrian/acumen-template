@@ -1,0 +1,32 @@
+dataset: <TODO>
+trainer: <TODO>
+evaluators: []
+
+use_cache: False
+
+batch_size: 512
+accumulation_steps: 1
+
+epochs: 300
+eval_every: 1
+
+loss_args:
+  temperature: 0.001
+
+early_stopping:
+  patience: 15
+  monitor: val_loss
+
+lr_scheduler:
+  - name: cyclic
+    start_epoch: 0
+    end_epoch: 200
+    base_lr: 0.0001
+    max_lr:  0.001
+    mode: triangular
+    step_size_up: 10
+    step_size_down: 10
+
+model: <TODO>
+model_args:
+  - TODO
