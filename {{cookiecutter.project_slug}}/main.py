@@ -75,7 +75,7 @@ checkpoint_callback = callbacks.ModelCheckpoint(
     dirpath = f'checkpoints/{args.group}:{args.name}',
     save_weights_only = True,
     direction='up',
-    filename=f'epoch={{epoch}}-val_acc={{{monitor_quantity}:.4f}}.ckpt',
+    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-val_acc={% raw %}{{{monitor_quantity}:.4f}}{% endraw %}.ckpt',
 )
 
 lr_callback = callbacks.MultiLRSchedule(schedulers = [
