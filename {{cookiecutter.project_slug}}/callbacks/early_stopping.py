@@ -2,6 +2,7 @@ from .callback import Callback
 
 
 class EarlyStopping(Callback):
+    # TODO dosen't work yet.
 
     def __init__(self,
             monitor = 'val_loss',

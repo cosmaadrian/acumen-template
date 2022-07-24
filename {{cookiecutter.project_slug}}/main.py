@@ -37,7 +37,7 @@ scheduler = torch.optim.lr_scheduler.CyclicLR(
     optimizer = model.configure_optimizers(lr = scheduler_args.base_lr),
     cycle_momentum = False,
     base_lr = scheduler_args.base_lr,
-    mode = scheduler_args.mode.,
+    mode = scheduler_args.mode,
     step_size_up = len(train_dataloader) * scheduler_args.step_size_up, # per epoch
     step_size_down = len(train_dataloader) * scheduler_args.step_size_down, # per epoch
     max_lr = scheduler_args.max_lr

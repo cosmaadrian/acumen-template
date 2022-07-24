@@ -1,11 +1,11 @@
-import pprint
-import yaml
 import os
+from collections import defaultdict
 import argparse
 import sys
-import easydict
 import warnings
-from collections import defaultdict
+
+import yaml
+import easydict
 
 
 def extend_config(cfg_path, child = None):
@@ -13,8 +13,8 @@ def extend_config(cfg_path, child = None):
         warnings.warn(f'::: File {cfg_path} was not found!')
         return child
 
-    with open(cfg_path, 'rt') as f:
-        parent_cfg = yaml.load(f, Loader = yaml.FullLoader)
+    with open(cfg_path, 'rt', encoding="utf8") as fd:
+        parent_cfg = yaml.load(fd, Loader = yaml.FullLoader)
 
     if child is not None:
         parent_cfg.update(child)
@@ -34,7 +34,7 @@ def load_args(args):
             if key in args and args.__dict__[key] is not None:
                 continue
 
-            if type(args) != dict:
+            if not isinstance(args, dict):
                 args.__dict__[key] = value
             else:
                 args[key] = value
@@ -42,93 +42,95 @@ def load_args(args):
     return args, cfg
 
 def flatten_dict_keys(original_key, values):
-	new_values = []
-	for key, value in values.items():
-		new_key = original_key + '.' + key
-		if type(value) == list:
-			continue
-		if type(value) != dict:
-			new_values.append((new_key, value, type(value)))
-		elif type(value) == dict:
-			new_values.extend(flatten_dict_keys(new_key, value))
+    new_values = []
+    for key, value in values.items():
+        new_key = original_key + '.' + key
+        if isinstance(value, list):
+            continue
 
-	return new_values
+        if isinstance(value, dict):
+            new_values.extend(flatten_dict_keys(new_key, value))
+
+        if not isinstance(value, dict):
+            new_values.append((new_key, value, type(value)))
+
+    return new_values
 
 def unflatten_dict_keys(dict_args, args):
-	dict_values = {** {key: value for key, value in args.items() if '.' not in key}, **dict_args}
+    dict_values = {** {key: value for key, value in args.items() if '.' not in key}, **dict_args}
 
-	unnested = defaultdict(dict)
-	for key, value in args.items():
-		if '.' not in key:
-			continue
+    unnested = defaultdict(dict)
+    for key, value in args.items():
+        if '.' not in key:
+            continue
 
-		root = '.'.join(key.split('.')[:-1])
-		value = {key.split('.')[-1]: value}
-		unnested[root].update(value)
+        root = '.'.join(key.split('.')[:-1])
+        value = {key.split('.')[-1]: value}
+        unnested[root].update(value)
 
-	if len(unnested):
-		dict_values = unflatten_dict_keys(dict_values.copy(), unnested)
+    if len(unnested):
+        dict_values = unflatten_dict_keys(dict_values.copy(), unnested)
 
-	return dict_values
+    return dict_values
 
 def update_parser(parser, args):
-	for key, value in args.__dict__.items():
-		if type(value) == dict:
-			new_values = flatten_dict_keys(key, value)
+    for key, value in args.__dict__.items():
+        if isinstance(value, dict):
+            new_values = flatten_dict_keys(key, value)
 
-			for arg_name, default_value, arg_type in new_values:
-				parser.add_argument(f'--{arg_name}', type = arg_type, default = default_value, required = False)
+            for arg_name, default_value, arg_type in new_values:
+                parser.add_argument(f'--{arg_name}', type = arg_type, default = default_value, required = False)
 
-			continue
+            continue
 
-		if key == 'config_file':
-			continue
+        if key == 'config_file':
+            continue
 
-		parser.add_argument(f'--{key}', type = type(value), default = value)
+        parser.add_argument(f'--{key}', type = type(value), default = value)
 
-	return parser
+    return parser
 
 def define_args():
-	config_path = None
-	for i in range(len(sys.argv)):
-		if sys.argv[i] == '--config_file':
-			config_path = sys.argv[i + 1]
-			break
+    config_path = None
+    for i in range(len(sys.argv)):
+        if sys.argv[i] == '--config_file':
+            config_path = sys.argv[i + 1]
+            break
 
-	if config_path is None:
-		raise Exception('::: Config path is required!')
+    if config_path is None:
+        raise Exception('::: Config path is required!')
 
-	# Removing the config file from args
-	sys.argv.pop(i)
-	sys.argv.pop(i)
+    # Removing the config file from args
+    sys.argv.pop(i)
+    sys.argv.pop(i)
 
-	cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
+    cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
 
-	parser = argparse.ArgumentParser(description='Do stuff.')
-	parser.add_argument('--name', type = str, default = 'test')
-	parser.add_argument('--group', type = str, default = 'default')
-	parser.add_argument('--notes', type = str, default = '')
-	parser.add_argument("--mode", type = str, default = 'dryrun')
+    parser = argparse.ArgumentParser(description='Do stuff.')
+    parser.add_argument('--name', type = str, default = 'test')
+    parser.add_argument('--group', type = str, default = 'default')
+    parser.add_argument('--notes', type = str, default = '')
+    parser.add_argument("--mode", type = str, default = 'dryrun')
 
-	parser.add_argument('--use_amp', type = int, default = 1, required = False)
+    parser.add_argument('--use_amp', type = int, default = 1, required = False)
 
-	parser.add_argument('--env', type = str, default = 'env1')
+    parser.add_argument('--env', type = str, default = 'env1')
 
-	# Needed to be able to update nested config keys
-	parser = update_parser(parser = parser, args = cfg_args)
-	flattened_args = parser.parse_args()
+    # Needed to be able to update nested config keys
+    parser = update_parser(parser = parser, args = cfg_args)
+    flattened_args = parser.parse_args()
 
-	# Make an EasyDict with all the args. This is used in all the main actors.
-	nested_args = unflatten_dict_keys(dict(), flattened_args.__dict__)
-	args = easydict.EasyDict(nested_args)
+    # Make an EasyDict with all the args. This is used in all the main actors.
+    nested_args = unflatten_dict_keys({}, flattened_args.__dict__)
+    args = easydict.EasyDict(nested_args)
 
-	if os.path.exists('configs/env_config.yaml'):
-		with open('configs/env_config.yaml', 'rt') as f:
-		    env_cfg = yaml.load(f, Loader = yaml.FullLoader)
-		args.environment = env_cfg[args.env]
+    if os.path.exists('configs/env_config.yaml'):
+        with open('configs/env_config.yaml', 'rt', encoding="utf8") as fd:
+            env_cfg = yaml.load(fd, Loader = yaml.FullLoader)
+        args.environment = env_cfg[args.env]
 
-	os.environ['WANDB_MODE'] = args.mode
-	os.environ['WANDB_NAME'] = args.name
-	os.environ['WANDB_NOTES'] = args.notes
+    os.environ['WANDB_MODE'] = args.mode
+    os.environ['WANDB_NAME'] = args.name
+    os.environ['WANDB_NOTES'] = args.notes
 
-	return args
+    return args

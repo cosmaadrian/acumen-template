@@ -1,7 +1,8 @@
-from .callback import Callback
 import os
 import torch
-import pprint
+
+from .callback import Callback
+
 
 class ModelCheckpoint(Callback):
 
@@ -12,7 +13,6 @@ class ModelCheckpoint(Callback):
             save_weights_only = False,
             filename="checkpoint",
             save_best_only = True,
-            save_to_drive = False
         ):
         self.trainer = None
         self.monitor = monitor
@@ -22,16 +22,8 @@ class ModelCheckpoint(Callback):
         self.filename = filename
         self.save_best_only = save_best_only
 
-        self.save_to_drive = save_to_drive
-
         self.previous_best = None
         self.previous_best_path = None
-
-        if self.save_to_drive:
-            # TODO ???
-            pass
-
-
 
     def on_epoch_end(self):
         trainer_quantity = self.trainer.logger.metrics[self.monitor]
@@ -46,13 +38,13 @@ class ModelCheckpoint(Callback):
                     print(f"No improvement. Current: {trainer_quantity} - Previous {self.previous_best}")
                     return
 
-        if self.previous_best_path is not None:
+        if self.previous_best_path is not None and self.save_best_only is True:
             os.unlink(self.previous_best_path)
 
         path = os.path.join(self.dirpath, self.filename.format(
             **{'epoch': self.trainer.epoch, self.monitor: trainer_quantity}
         ))
-        print(f"Saving model to: {path}")
+        print(f"🔥 Saving model to: {path} 🔥")
 
         os.makedirs(self.dirpath, exist_ok = True)
 

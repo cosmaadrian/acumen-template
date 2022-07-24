@@ -1,8 +1,8 @@
-import yaml
 import os
 import glob
-import warnings
+
 import torch
+
 
 def load_model(args):
     checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/checkpoints/{args.group}:{args.name}/*.ckpt'
@@ -27,4 +27,3 @@ def load_model_by_name(name):
     checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/checkpoints/{name}/*.ckpt'
     checkpoints = glob.glob(checkpoint_path)
     return torch.load(checkpoints[-1])
-
