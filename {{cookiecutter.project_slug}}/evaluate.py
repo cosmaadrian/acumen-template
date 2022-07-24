@@ -19,7 +19,7 @@ from trainer import NotALightningTrainer
 from loggers import WandbLogger
 
 from schedulers import LRFinder, OneCycleLR
-from utils import load_args, load_model, extend_config
+from lib.utils import load_args, load_model, extend_config
 
 import nomenclature
 

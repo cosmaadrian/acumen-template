@@ -102,11 +102,8 @@ def define_args():
 	sys.argv.pop(i)
 	sys.argv.pop(i)
 
+	cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
 
-	args = argparse.Namespace()
-	args.config_file = config_path
-
-	args, cfg = load_args(args)
 	parser = argparse.ArgumentParser(description='Do stuff.')
 	parser.add_argument('--name', type = str, default = 'test')
 	parser.add_argument('--group', type = str, default = 'default')
@@ -118,11 +115,11 @@ def define_args():
 	parser.add_argument('--env', type = str, default = 'env1')
 
 	# Needed to be able to update nested config keys
-	parser = update_parser(parser = parser, args = args)
-	args = parser.parse_args()
+	parser = update_parser(parser = parser, args = cfg_args)
+	flattened_args = parser.parse_args()
 
 	# Make an EasyDict with all the args. This is used in all the main actors.
-	nested_args = unflatten_dict_keys(dict(), args.__dict__)
+	nested_args = unflatten_dict_keys(dict(), flattened_args.__dict__)
 	args = easydict.EasyDict(nested_args)
 
 	if os.path.exists('configs/env_config.yaml'):

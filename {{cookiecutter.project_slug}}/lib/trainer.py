@@ -45,6 +45,7 @@ class NotALightningTrainer(object):
             model.model = nn.DataParallel(model.model)
             model.model = model.model.to(nomenclature.device)
 
+        # TODO each model should have defined an input shape???
         summary(model.model, input_shape = (model.model.INPUT_SHAPE))
 
         self.logger.watch(model.model)

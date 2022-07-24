@@ -7,13 +7,11 @@ from torch.utils.data import DataLoader
 import wandb
 
 import callbacks
-from trainer import NotALightningTrainer
+from lib import NotALightningTrainer
 from loggers import WandbLogger
 
-from utils import load_args
-
 import nomenclature
-from arg_utils import define_args
+from lib.arg_utils import define_args
 
 args = define_args()
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
