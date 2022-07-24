@@ -2,8 +2,10 @@ import torch
 import tqdm
 import torch.nn as nn
 import nomenclature
+
+# from torch.optim.swa_utils import AveragedModel, SWALR
+
 import numpy as np
-from torch.optim.swa_utils import AveragedModel, SWALR
 
 from torchinfo import summary
 
@@ -39,16 +41,16 @@ class NotALightningTrainer(object):
         model.trainer = self
 
         if not hasattr(model.model, 'module'):
-            # distributed data parallel??
-            model.model = nn.DataParallel(model.model, device_ids=[0, 1])
+            # distributed data parallel?? No, cuz we're poor students.
+            model.model = nn.DataParallel(model.model)
             model.model = model.model.to(nomenclature.device)
 
-        summary(model.model, input_shape = (self.args.batch_size, 54))
+        summary(model.model, input_shape = (model.model.INPUT_SHAPE))
 
         self.logger.watch(model.model)
         self.model_hook = model.model
 
-        # self.scaler = torch.cuda.amp.GradScaler()
+        self.scaler = torch.cuda.amp.GradScaler(enabled = self.args.use_amp)
 
         for epoch in range(self.args.epochs):
             if self.should_stop:
@@ -70,18 +72,18 @@ class NotALightningTrainer(object):
                 for key in data.keys():
                     data[key] = data[key].to(nomenclature.device)
 
-                loss = model.training_step(data, i)
-                loss = loss / self.args.accumulation_steps
+                # Autocast by default, to automatically save memory with marginal loss of performance
+                with torch.cuda.amp.autocast(enabled = self.args.use_amp):
+                    loss = model.training_step(data, i)
+                    loss = loss / self.args.accumulation_steps
 
-                # self.scaler.scale(loss).backward()
-                loss.backward()
+                self.scaler.scale(loss).backward()
 
                 if (i + 1) % self.args.accumulation_steps == 0:
                     torch.nn.utils.clip_grad_norm_(model.model.parameters(), 1.5)
 
-                    optimizer.step()
-                    # self.scaler.step(optimizer)
-                    # self.scaler.update()
+                    self.scaler.step(optimizer)
+                    self.scaler.update()
 
                     for callback in self.callbacks:
                         callback.on_batch_end()
@@ -90,14 +92,16 @@ class NotALightningTrainer(object):
 
             model.training_epoch_end()
             self.epoch += 1
-            model.model.train(False)
-            with torch.no_grad():
-                outputs = []
-                for evaluator in evaluators:
-                    value = evaluator.trainer_evaluate(self.global_step)
-                    self.logger.log(f'val_acc_{evaluator.__class__.__name__}', value, on_step = True, force_log = True)
 
-            model.model.train(True)
+            if (self.epoch + 1) % self.args.eval_every == 0:
+                model.model.train(False)
+                with torch.no_grad():
+                    outputs = []
+                    for evaluator in evaluators:
+                        value = evaluator.trainer_evaluate(self.global_step)
+                        self.logger.log(f'val_acc_{evaluator.__class__.__name__}', value, on_step = True, force_log = True)
+
+                model.model.train(True)
 
             for callback in self.callbacks:
                 callback.on_epoch_end()

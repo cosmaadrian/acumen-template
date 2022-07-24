@@ -56,7 +56,6 @@ os.environ['WANDB_NOTES'] = args.notes
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
 
 wandb.config.update(vars(args))
-wandb.config.update({'config': cfg})
 
 architecture = nomenclature.MODELS[args.model](args)
 

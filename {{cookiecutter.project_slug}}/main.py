@@ -1,68 +1,25 @@
 import torch
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-import argparse
 import torch
-import wandb
-import yaml
-import os
-
-from tqdm import tqdm
-import torch.nn as nn
-import torch.nn.functional as F
-from torchvision import transforms, utils
 from torch.utils.data import DataLoader
-import pprint
+
+import wandb
 
 import callbacks
 from trainer import NotALightningTrainer
 from loggers import WandbLogger
 
-from schedulers import LRFinder, OneCycleLR
 from utils import load_args
 
 import nomenclature
+from arg_utils import define_args
 
-parser = argparse.ArgumentParser(description='Do stuff.')
-parser.add_argument('--config_file', type = str, required = True)
-parser.add_argument('--name', type = str, default = 'test')
-parser.add_argument('--group', type = str, default = 'default')
-parser.add_argument('--notes', type = str, default = '')
-parser.add_argument("--mode", type = str, default = 'dryrun')
-parser.add_argument('--epochs', type=int, default = None)
-parser.add_argument('--batch_size', type=int, default = None)
-parser.add_argument('--log_every', type = int, default = 5)
-parser.add_argument('--eval_every', type = int, default = None)
-parser.add_argument('--accumulation_steps', type = int, default = None)
-
-parser.add_argument('--output_dir', type = str, default = 'dummy')
-
-parser.add_argument('--env', type = str, default = 'genesis')
-
-parser.add_argument('--trainer', type=str, default = None)
-parser.add_argument('--model', type=str, default = None)
-parser.add_argument('--dataset', type=str, default = None)
-
-args = parser.parse_args()
-
-args, cfg = load_args(args)
-with open('configs/env_config.yaml', 'rt') as f:
-    env_cfg = yaml.load(f, Loader = yaml.FullLoader)
-args.environment = env_cfg[args.env]
-
-pprint.pprint(args.__dict__)
-
-os.environ['WANDB_MODE'] = args.mode
-os.environ['WANDB_NAME'] = args.name
-os.environ['WANDB_NOTES'] = args.notes
-
+args = define_args()
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
+wandb.config.update(vars(args))
 
 dataset = nomenclature.DATASETS[args.dataset]
-
-wandb.config.update(vars(args))
-wandb.config.update({'config': cfg})
-
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 
 architecture = nomenclature.MODELS[args.model](args)
@@ -78,18 +35,19 @@ checkpoint_callback = callbacks.ModelCheckpoint(
     filename=f'epoch={% raw %}{{epoch}}{% endraw %}-val_acc={% raw %}{{{monitor_quantity}:.4f}}{% endraw %}.ckpt',
 )
 
-lr_callback = callbacks.MultiLRSchedule(schedulers = [
-    (nomenclature.SCHEDULERS[scheduler_args['name']](
-        optimizer = model.configure_optimizers(lr = scheduler_args['base_lr']),
-        cycle_momentum = False,
-        base_lr = scheduler_args['base_lr'],
-        mode = scheduler_args['mode'],
-        step_size_up = len(train_dataloader) * scheduler_args['step_size_up'], # per epoch
-        step_size_down = len(train_dataloader) * scheduler_args['step_size_down'], # per epoch
-        max_lr = scheduler_args['max_lr']
-    ), scheduler_args['start_epoch'], scheduler_args['end_epoch'])
-    for scheduler_args in args.lr_scheduler
-])
+scheduler = torch.optim.lr_scheduler.CyclicLR(
+    optimizer = model.configure_optimizers(lr = scheduler_args.base_lr),
+    cycle_momentum = False,
+    base_lr = scheduler_args.base_lr,
+    mode = scheduler_args.mode.,
+    step_size_up = len(train_dataloader) * scheduler_args.step_size_up, # per epoch
+    step_size_down = len(train_dataloader) * scheduler_args.step_size_down, # per epoch
+    max_lr = scheduler_args.max_lr
+)
+
+lr_callback = callbacks.LambdaCallback(
+    on_batch_end = lambda: scheduler.step()
+)
 
 lr_logger = callbacks.LambdaCallback(
     on_batch_end = lambda: wandb_logger.log('lr', lr_callback.get_last_lr()[0])

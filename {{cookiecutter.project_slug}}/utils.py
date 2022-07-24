@@ -1,6 +1,7 @@
 import yaml
 import os
 import glob
+import warnings
 import torch
 
 def load_model(args):
@@ -27,26 +28,3 @@ def load_model_by_name(name):
     checkpoints = glob.glob(checkpoint_path)
     return torch.load(checkpoints[-1])
 
-def extend_config(cfg_path, child = None):
-    with open(cfg_path, 'rt') as f:
-        parent_cfg = yaml.load(f, Loader = yaml.FullLoader)
-
-    if child is not None:
-        parent_cfg.update(child)
-
-    if '$extends$' in parent_cfg:
-        path = parent_cfg['$extends$']
-        del parent_cfg['$extends$']
-        parent_cfg = extend_config(child = parent_cfg, cfg_path = path)
-
-    return parent_cfg
-
-def load_args(args):
-    cfg = extend_config(cfg_path = f'{args.config_file}', child = None)
-
-    for key, value in cfg.items():
-        if key in args and args.__dict__[key] is not None:
-            continue
-        args.__dict__[key] = value
-
-    return args, cfg
