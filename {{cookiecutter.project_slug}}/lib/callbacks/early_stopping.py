@@ -2,8 +2,6 @@ from .callback import Callback
 
 
 class EarlyStopping(Callback):
-    # TODO dosen't work yet.
-
     def __init__(self,
             monitor = 'val_loss',
             patience = 5,
@@ -29,13 +27,15 @@ class EarlyStopping(Callback):
                     self.current_patience = 0
                     self.previous_best = trainer_quantity
                     return
-            else:
+            elif self.direction == 'up':
                 if self.previous_best >= trainer_quantity:
                     self.current_patience += 1
                 else:
                     self.current_patience = 0
                     self.previous_best = trainer_quantity
                     return
+        else:
+            self.previous_best = trainer_quantity
 
         if self.current_patience == self.patience:
             print(f"No improvement for {self.patience} epochs. Stopping training.")

@@ -117,6 +117,7 @@ def define_args():
     parser.add_argument('--env', type = str, default = 'env1')
 
     # Needed to be able to update nested config keys
+    # Obviously (?) dosen't work with list arguments (such as model heads and losses).
     parser = update_parser(parser = parser, args = cfg_args)
     flattened_args = parser.parse_args()
 
