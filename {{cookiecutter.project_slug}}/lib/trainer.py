@@ -1,20 +1,20 @@
 import torch
 from torch import nn
-# from torch.optim.swa_utils import AveragedModel, SWALR
 from torchinfo import summary
 
 import numpy as np
 import tqdm
 
-import nomenclature
+from .loggers import NoLogger
+import lib 
 
 
 class NotALightningTrainer():
 
     def __init__(self,
             args,
-            callbacks,
-            logger
+            callbacks = None,
+            logger = None
         ):
         self.args = args
 
@@ -22,10 +22,17 @@ class NotALightningTrainer():
         self.global_step = 0
 
         self.logger = logger
+
+        if self.logger is None:
+            self.logger = NoLogger()
+
         self.logger.trainer = self
 
         self.callbacks = callbacks
-        for callback in callbacks:
+        if self.callbacks is None:
+            self.callbacks = []
+
+        for callback in self.callbacks:
             callback.trainer = self
 
         self.should_stop = False
@@ -36,8 +43,11 @@ class NotALightningTrainer():
     def stop(self):
         self.should_stop = True
 
-    def fit(self, model, train_dataloader, evaluators):
+    def fit(self, model, train_dataloader, evaluators = None):
         model.log = self.logger.log
+
+        if evaluators is None:
+            evaluators = []
 
         optimizer = model.configure_optimizers()
         model.trainer = self
@@ -46,10 +56,10 @@ class NotALightningTrainer():
         if not hasattr(self.model_hook, 'module'):
             # distributed data parallel?? No, cuz we're poor students.
             model.model = nn.DataParallel(model.model)
-            model.model = model.model.to(nomenclature.device)
+            model.model = model.model.to(lib.device)
 
         # TODO each model should have defined an input shape???
-        summary(self.model_hook, input_shape = (model.model.INPUT_SHAPE))
+        # summary(self.model_hook, input_shape = (model.model.INPUT_SHAPE))
 
         self.logger.watch(self.model_hook)
 
@@ -73,7 +83,7 @@ class NotALightningTrainer():
                     callback.on_batch_start()
 
                 for key in data.keys():
-                    data[key] = data[key].to(nomenclature.device)
+                    data[key] = data[key].to(lib.device)
 
                 # Autocast to automatically save memory with marginal loss of performance
                 with torch.cuda.amp.autocast(enabled = self.args.use_amp):

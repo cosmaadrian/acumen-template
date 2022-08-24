@@ -1,17 +1,15 @@
 import torch
 torch.multiprocessing.set_sharing_strategy('file_system')
 
-import torch
-from torch.utils.data import DataLoader
-
 import wandb
 
-import callbacks
-from lib import NotALightningTrainer
-from loggers import WandbLogger
 
-import nomenclature
+import lib.callbacks as callbacks
+from lib.loggers import WandbLogger
 from lib.arg_utils import define_args
+
+from lib import NotALightningTrainer
+from lib import nomenclature
 
 args = define_args()
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)

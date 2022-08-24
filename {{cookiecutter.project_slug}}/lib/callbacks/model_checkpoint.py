@@ -44,7 +44,7 @@ class ModelCheckpoint(Callback):
         path = os.path.join(self.dirpath, self.filename.format(
             **{'epoch': self.trainer.epoch, self.monitor: trainer_quantity}
         ))
-        print(f"🔥 Saving model to: {path} 🔥")
+        print(f"🔥 🔥 🔥 Saving model to: {path}")
 
         os.makedirs(self.dirpath, exist_ok = True)
 

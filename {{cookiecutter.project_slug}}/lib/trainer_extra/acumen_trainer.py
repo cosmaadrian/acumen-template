@@ -2,6 +2,10 @@ import torch
 import torch.nn as nn
 
 class AcumenTrainer(object):
+    def __init__(self, args, model):
+        self.args = args
+        self.model = model
+        self._optimizer = None
 
     def configure_optimizers(self, lr = 0.1):
         if self._optimizer is not None:

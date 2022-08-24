@@ -38,3 +38,10 @@ To generate such a boilerplate class use the `forge.py` script:
 ```
 
 This will add boilerplate code in the respective directories, add class names to the `__init__.py` file and add snake-case names to the `nomenclature.py` file.
+
+
+### Structure for the configuration file.
+
+- All config files should have a "model_args" entry, an define an "embedding_size"
+
+

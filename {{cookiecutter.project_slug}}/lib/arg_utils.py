@@ -94,11 +94,11 @@ def define_args():
     config_path = None
     for i in range(len(sys.argv)):
         if sys.argv[i] == '--config_file':
-            config_path = sys.argv[i + 1]
+            config_path = sys.argv[i + 1] if len(sys.argv) > i + 1  else None
             break
 
     if config_path is None:
-        raise Exception('::: Config path is required!')
+        raise Exception('::: --config_file is required!')
 
     # Removing the config file from args
     sys.argv.pop(i)

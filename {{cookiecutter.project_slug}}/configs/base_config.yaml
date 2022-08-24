@@ -1,8 +1,6 @@
-dataset: <TODO>
-trainer: <TODO>
+dataset: null
+trainer: null
 evaluators: []
-
-use_cache: 0
 
 batch_size: 512
 accumulation_steps: 1
@@ -10,8 +8,9 @@ accumulation_steps: 1
 epochs: 300
 eval_every: 1
 
-loss_args:
-  temperature: 0.001
+
+# loss_args:
+  # temperature: 0.001
 
 early_stopping:
   patience: 15
@@ -19,13 +18,13 @@ early_stopping:
 
 lr_scheduler:
   start_epoch: 0
-  end_epoch: 200
+  end_epoch: 300
   base_lr: 0.0001
   max_lr:  0.001
   mode: triangular
   step_size_up: 10
   step_size_down: 10
 
-model: <TODO>
+model: transformer
 model_args:
-  - TODO
+  embedding_size: null
