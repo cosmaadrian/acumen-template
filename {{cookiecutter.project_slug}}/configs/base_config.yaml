@@ -5,6 +5,10 @@ evaluators: []
 batch_size: 512
 accumulation_steps: 1
 
+model_checkpoint:
+  monitor_quantity: <TODO>
+  direction: up
+
 epochs: 300
 eval_every: 1
 

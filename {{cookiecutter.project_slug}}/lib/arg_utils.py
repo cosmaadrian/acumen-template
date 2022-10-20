@@ -46,10 +46,12 @@ def flatten_dict_keys(original_key, values):
     for key, value in values.items():
         new_key = original_key + '.' + key
         if isinstance(value, list):
+            new_values.append((new_key, value, type(value)))
             continue
 
         if isinstance(value, dict):
-            new_values.extend(flatten_dict_keys(new_key, value))
+            extra_new_values = flatten_dict_keys(new_key, value)
+            new_values.extend(extra_new_values)
 
         if not isinstance(value, dict):
             new_values.append((new_key, value, type(value)))
@@ -57,7 +59,16 @@ def flatten_dict_keys(original_key, values):
     return new_values
 
 def unflatten_dict_keys(dict_args, args):
-    dict_values = {** {key: value for key, value in args.items() if '.' not in key}, **dict_args}
+    dict_values = dict_args.copy()
+
+    for key, value in args.items():
+        if '.' in key:
+            continue
+
+        if key in dict_values:
+            dict_values[key] = {**dict_values[key], **value}
+        else:
+            dict_values[key] = value
 
     unnested = defaultdict(dict)
     for key, value in args.items():
@@ -135,3 +146,4 @@ def define_args():
     os.environ['WANDB_NOTES'] = args.notes
 
     return args
+

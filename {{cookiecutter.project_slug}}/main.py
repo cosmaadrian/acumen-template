@@ -23,13 +23,26 @@ model = nomenclature.TRAINER[args.trainer](args, architecture)
 
 wandb_logger = WandbLogger()
 
-checkpoint_callback = callbacks.ModelCheckpoint(
-    monitor = f'{monitor_quantity}',
-    dirpath = f'checkpoints/{args.group}:{args.name}',
+checkpoint_callback_best = callbacks.ModelCheckpoint(
+    name = ' 🔥 Best Checkpoint Overall 🔥',
+    monitor = args.model_checkpoint['monitor_quantity'],
+    dirpath = f'checkpoints/{args.group}:{args.name}/best/',
     save_weights_only = True,
-    direction='up',
-    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-val_acc={% raw %}{{{monitor_quantity}:.4f}}{% endraw %}.ckpt',
+    save_best_only = True,
+    direction = args.model_checkpoint['direction'],
+    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-{args.model_checkpoint["monitor_quantity"]}={% raw %}{{{args.model_checkpoint["monitor_quantity"]}:.4f}}{% endraw %}.ckpt',
 )
+
+checkpoint_callback_last = callbacks.ModelCheckpoint(
+    name = '🛠️ Last Checkpoint 🛠️',
+    monitor = args.model_checkpoint['monitor_quantity'],
+    dirpath = f'checkpoints/{args.group}:{args.name}/last/',
+    save_weights_only = True,
+    save_best_only = False,
+    direction = args.model_checkpoint['direction'],
+    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-{args.model_checkpoint["monitor_quantity"]}={% raw %}{{{args.model_checkpoint["monitor_quantity"]}:.4f}}{% endraw %}.ckpt',
+)
+
 
 scheduler = torch.optim.lr_scheduler.CyclicLR(
     optimizer = model.configure_optimizers(lr = scheduler_args.base_lr),
@@ -52,7 +65,8 @@ lr_logger = callbacks.LambdaCallback(
 trainer = NotALightningTrainer(
     args = args,
     callbacks = [
-        checkpoint_callback,
+        checkpoint_callback_best,
+        checkpoint_callback_last,
         lr_callback,
         lr_logger
     ],

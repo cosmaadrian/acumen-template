@@ -7,6 +7,7 @@ import tqdm
 
 from .loggers import NoLogger
 import lib 
+import constants
 
 
 class NotALightningTrainer():
@@ -59,11 +60,11 @@ class NotALightningTrainer():
             model.model = model.model.to(lib.device)
 
         # TODO each model should have defined an input shape???
-        # summary(self.model_hook, input_shape = (model.model.INPUT_SHAPE))
+        summary(self.model_hook, input_shape = (1, self.args.period_length, constants.NUM_JOINTS, constants.NUM_CHANNELS))
 
         self.logger.watch(self.model_hook)
 
-        self.scaler = torch.cuda.amp.GradScaler(enabled = self.args.use_amp)
+        self.scaler = torch.cuda.amp.GradScaler(enabled = bool(self.args.use_amp))
 
         for epoch in range(self.args.epochs):
             if self.should_stop:
@@ -86,7 +87,7 @@ class NotALightningTrainer():
                     data[key] = data[key].to(lib.device)
 
                 # Autocast to automatically save memory with marginal loss of performance
-                with torch.cuda.amp.autocast(enabled = self.args.use_amp):
+                with torch.cuda.amp.autocast(enabled = bool(self.args.use_amp)):
                     loss = model.training_step(data, i)
                     loss = loss / self.args.accumulation_steps
 
@@ -110,10 +111,13 @@ class NotALightningTrainer():
                 self.model_hook.train(False)
                 with torch.no_grad():
                     for evaluator in evaluators:
-                        value = evaluator.trainer_evaluate(self.global_step)
-                        self.logger.log(f'val_acc_{evaluator.__class__.__name__}', value, on_step = True, force_log = True)
+                        print(f'[{evaluator.__class__.__name__}] Running evaluation ...')
+                        values = evaluator.trainer_evaluate(self.global_step)
+                        for key, value in values.items():
+                            self.logger.log(f'{evaluator.__class__.__name__}_{key}', value, on_step = False, force_log = True)
 
                 self.model_hook.train(True)
 
             for callback in self.callbacks:
                 callback.on_epoch_end()
+
