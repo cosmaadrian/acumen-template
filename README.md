@@ -25,6 +25,15 @@ This project's goal is to provide a ready-made deep learning research project st
 
 It is heavily based on `.yaml` configuration files and command line arguments to run experiments in a declarative way. The only things that the researcher needs to focus their time and energy is data cleaning / model training and evaluation. The main training loop and experiment tracking is automatically done by the framework.
 
+
+### Command line management
+
+You can use the `lib/forge.py` command line tool to better manage your project. Get started:
+
+```
+	python lib/forge.py help
+```
+
 ### Generating classes for Datasets, Models, Trainers and Evaluators
 
 Datasets, Models and Trainers must be placed in the appropriate directory, added to their respective `__init__.py` file, and added to the `nomenclature.py` file. This process can be time consuming and / or confusing at first. I have created a helper script to keep the hassle at a minimum.
@@ -32,9 +41,9 @@ Datasets, Models and Trainers must be placed in the appropriate directory, added
 To generate such a boilerplate class use the `forge.py` script:
 
 ```
-	python forge.py --create dataset:MyDatasetClassName:my-dataset-class_name
-	python forge.py --create model:MyModelClassName:my-model-class_name
-	python forge.py --create trainer:MyTrainerClassName:my-trainer-class_name
+	python lib/forge.py create dataset:MyDatasetClassName:my-dataset-class_name
+	python lib/forge.py create model:MyModelClassName:my-model-class_name
+	python lib/forge.py create trainer:MyTrainerClassName:my-trainer-class_name
 ```
 
 This will add boilerplate code in the respective directories, add class names to the `__init__.py` file and add snake-case names to the `nomenclature.py` file.
@@ -42,6 +51,6 @@ This will add boilerplate code in the respective directories, add class names to
 
 ### Structure for the configuration file.
 
-- All config files should have a "model_args" entry, an define an "embedding_size"
+You'll get the hang of it!
 
-
+Don't forget to use `$extends$: ...` in a config file if you want to extend it.

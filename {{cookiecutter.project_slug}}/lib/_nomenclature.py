@@ -1,9 +1,7 @@
 import easydict
 
 from .model_extra import CoralHead, ClassificationHead, CoralLoss, AcumenCrossEntropy
-from .model_extra import MnistCNN
 from .trainer_extra import *
-from .dataset_extra import MnistDataset
 
 NOMENCLATURE = easydict.EasyDict({
 	'TRAINERS': {
@@ -21,11 +19,9 @@ NOMENCLATURE = easydict.EasyDict({
 	},
 
 	'DATASETS': {
-        'mnist': MnistDataset,
 	},
 
 	'MODELS': {
-        'mnist-cnn': MnistCNN,
 	},
 
 	'EVALUATORS': {
