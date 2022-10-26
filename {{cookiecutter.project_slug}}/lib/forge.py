@@ -3,8 +3,11 @@ import sys
 import os
 import requests
 import random
+from git.repo.base import Repo
+import shutil
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
+from __version__ import VERSION
 
 """
 	python lib/forge.py list
@@ -20,7 +23,7 @@ ENDC = '\033[0m'
 BOLD = '\033[1m'
 UNDERLINE = '\033[4m'
 
-logo = "Forge🏗️"
+logo = "🔧Forge"
 
 class Command():
 	def run(self, args = None):
@@ -80,6 +83,24 @@ class EncourageCommand(Command):
 		print(f"{BOLD}{WARNING}" + random.choice(quotes.text.split('\n')) + ENDC)
 		print('\n')
 
+class UpdateCommand(Command):
+	name = "update"
+	description = "Update the \"lib/\" to the latest version."
+
+	def run(self, args):
+		current_version, latest_version = check_version(verbose = False)
+		if current_version == latest_version:
+			print("Already up to date.")
+			return
+
+		print("::: Getting latest updates ... ")
+		Repo.clone_from("https://github.com/cosmaadrian/acumen-template", "/tmp/acumen-template/")
+		local_lib_path = os.path.dirname(os.path.abspath(__file__))
+		print("::: Updating ... ")
+		shutil.copytree('/tmp/acumen-template/lib/*', local_lib_path)
+		print(f"::: Done! Now at  {latest_version}.")
+
+
 class CreateCommand(Command):
 	name = "create"
 	description = "Create a resource for this project. Creates a class with boilerplate, adds it to __init__.py and nomenclature.py"
@@ -89,7 +110,21 @@ class CreateCommand(Command):
 
 commands = {obj.name: obj for name, obj in inspect.getmembers(sys.modules[__name__]) if name.endswith('Command') and name != 'Command'}
 
+def check_version(verbose = True):
+	latest_version_path = 'https://raw.githubusercontent.com/cosmaadrian/acumen-template/master/%7B%7Bcookiecutter.project_slug%7D%7D/lib/__version__.py'
+	latest_version = float(requests.get(latest_version_path).text.split('=')[-1].strip())
+	current_version = VERSION
+
+	if verbose and current_version != latest_version:
+		print(f'{WARNING}☣️ Warning! Detected current lib version to be {current_version}, but latest version is {latest_version}.{ENDC}')
+		print(f'You can update to the latest changes using:')
+		print(f'	{OKCYAN}python lib/forge.py update.{ENDC}')
+
+	return current_version, latest_version
+
 if __name__ == '__main__':
+	check_version()
+
 	if len(sys.argv) < 2:
 		HelpCommand().run()
 		exit(0)
