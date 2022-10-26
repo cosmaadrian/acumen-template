@@ -95,20 +95,22 @@ class UpdateCommand(Command):
 	description = "Update the \"lib/\" to the latest version."
 
 	def run(self, args):
+		local_lib_path = os.path.dirname(os.path.abspath(__file__))
+		clone_path = os.path.join(local_lib_path, 'acumen_template')
+
 		current_version, latest_version = check_version(verbose = False)
 		if current_version == latest_version:
 			print("Already up to date.")
 			return
 
 		print("::: Getting latest updates ... ")
-		if os.path.exists('/tmp/acumen-template'):
-			shutil.rmtree('/tmp/acumen-template')
+		if os.path.exists(clone_path):
+			shutil.rmtree(clone_path)
 
-		Repo.clone_from("https://github.com/cosmaadrian/acumen-template", "/tmp/acumen-template/")
-		local_lib_path = os.path.dirname(os.path.abspath(__file__))
+		Repo.clone_from("https://github.com/cosmaadrian/acumen-template", clone_path)
 		print("::: Updating ... ")
 		shutil.rmtree(local_lib_path)
-		shutil.copytree('{% raw %}/tmp/acumen-template/{{cookiecutter.project_slug}}/lib/{% endraw %}', local_lib_path)
+		shutil.copytree('{% raw %}' + clone_path + '/{{cookiecutter.project_slug}}/lib/{% endraw %}', local_lib_path)
 		print(f"::: Done! Now at  {latest_version}.")
 
 class CreateCommand(Command):
@@ -122,7 +124,7 @@ commands = {obj.name: obj for name, obj in inspect.getmembers(sys.modules[__name
 
 def check_version(verbose = True):
 	latest_version_path = 'https://raw.githubusercontent.com/cosmaadrian/acumen-template/master/%7B%7Bcookiecutter.project_slug%7D%7D/lib/__version__.py'
-	latest_version = float(requests.get(latest_version_path).text.split('=')[-1].strip())
+	latest_version = float(requests.get(latest_version_path, headers={'Cache-Control': 'no-cache'}).text.split('=')[-1].strip())
 	current_version = VERSION
 
 	if verbose and current_version != latest_version:
