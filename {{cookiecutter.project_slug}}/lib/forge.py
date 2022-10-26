@@ -96,7 +96,7 @@ class UpdateCommand(Command):
 
 	def run(self, args):
 		local_lib_path = os.path.dirname(os.path.abspath(__file__))
-		clone_path = os.path.join(local_lib_path, '../acumen_template')
+		clone_path = os.path.join(local_lib_path[:-5], 'acumen_template')
 
 		current_version, latest_version = check_version(verbose = False)
 		if current_version == latest_version:
