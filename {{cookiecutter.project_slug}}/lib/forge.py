@@ -83,6 +83,13 @@ class EncourageCommand(Command):
 		print(f"{BOLD}{WARNING}" + random.choice(quotes.text.split('\n')) + ENDC)
 		print('\n')
 
+class VersionCommand(Command):
+	name = "version"
+	description = "Show version and exit."
+
+	def run(self, args):
+		print(f"{logo} Version {VERSION}. Let's get that bread.")
+
 class UpdateCommand(Command):
 	name = "update"
 	description = "Update the \"lib/\" to the latest version."
@@ -101,7 +108,7 @@ class UpdateCommand(Command):
 		local_lib_path = os.path.dirname(os.path.abspath(__file__))
 		print("::: Updating ... ")
 		shutil.rmtree(local_lib_path)
-		shutil.copytree({% raw %}'/tmp/acumen-template/{{cookiecutter.project_slug}}/lib/'{% endraw %}, local_lib_path)
+		shutil.copytree('{% raw %}/tmp/acumen-template/{{cookiecutter.project_slug}}/lib/{% endraw %}', local_lib_path)
 		print(f"::: Done! Now at  {latest_version}.")
 
 class CreateCommand(Command):
