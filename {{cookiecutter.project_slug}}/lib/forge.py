@@ -134,8 +134,10 @@ commands = {obj.name: obj for name, obj in inspect.getmembers(sys.modules[__name
 
 def check_version(verbose = True):
     latest_version_path = 'https://raw.githubusercontent.com/cosmaadrian/acumen-template/master/%7B%7Bcookiecutter.project_slug%7D%7D/lib/__version__.py'
-    latest_version = version.parse(requests.get(latest_version_path, headers={'Cache-Control': 'no-cache'}).text.split('=')[-1].strip())
-    current_version = version.parse(VERSION)
+    version_string = requests.get(latest_version_path, headers={'Cache-Control': 'no-cache'}).text.split('=')[-1].strip()[1:-1]
+
+    latest_version = version.Version(version_string)
+    current_version = version.Version(VERSION)
 
     if verbose and current_version < latest_version:
         print(f'{WARNING}☣️ Warning! Detected current lib version to be {current_version}, but latest version is {latest_version}.{ENDC}')
