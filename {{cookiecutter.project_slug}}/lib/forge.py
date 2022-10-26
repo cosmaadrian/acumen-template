@@ -96,7 +96,7 @@ class UpdateCommand(Command):
 
 	def run(self, args):
 		local_lib_path = os.path.dirname(os.path.abspath(__file__))
-		clone_path = os.path.join(local_lib_path, 'acumen_template')
+		clone_path = os.path.join(local_lib_path, '../acumen_template')
 
 		current_version, latest_version = check_version(verbose = False)
 		if current_version == latest_version:
@@ -112,6 +112,7 @@ class UpdateCommand(Command):
 		os.rename(local_lib_path, local_lib_path + '.old')
 		try:
 			shutil.copytree('{% raw %}' + clone_path + '/{{cookiecutter.project_slug}}/lib/{% endraw %}', local_lib_path)
+			shutil.rmtree(clone_path)
 			shutil.rmtree(local_lib_path + '.old')
 		except Exception as e:
 			os.rename(local_lib_path + '.old', local_lib_path)
