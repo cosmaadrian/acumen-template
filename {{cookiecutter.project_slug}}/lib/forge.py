@@ -97,7 +97,7 @@ class UpdateCommand(Command):
 		Repo.clone_from("https://github.com/cosmaadrian/acumen-template", "/tmp/acumen-template/")
 		local_lib_path = os.path.dirname(os.path.abspath(__file__))
 		print("::: Updating ... ")
-		shutil.copytree('/tmp/acumen-template/{{cookiecutter.project_slug}}/lib/*', local_lib_path)
+		shutil.copytree({% raw %}'/tmp/acumen-template/{{cookiecutter.project_slug}}/lib/*'{% endraw %}, local_lib_path)
 		print(f"::: Done! Now at  {latest_version}.")
 
 
