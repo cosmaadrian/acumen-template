@@ -5,3 +5,5 @@ from ._nomenclature import NOMENCLATURE as nomenclature
 from .trainer import NotALightningTrainer
 
 from .model_extra import ModelOutput, ClassificationOutput, MultiHead
+from .dataset_extra import AcumenDataset
+from .evaluator_extra import AcumenEvaluator

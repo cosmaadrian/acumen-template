@@ -1,61 +1,20 @@
-import torch
-torch.multiprocessing.set_sharing_strategy('file_system')
-
-import argparse
-import torch
-import wandb
 import yaml
-import os
-
-from tqdm import tqdm
-import torch.nn as nn
-import torch.nn.functional as F
-from torchvision import transforms, utils
-from torch.utils.data import DataLoader
 import pprint
 
-import callbacks
-from trainer import NotALightningTrainer
-from loggers import WandbLogger
-
-from schedulers import LRFinder, OneCycleLR
-from lib.utils import load_args, load_model, extend_config
-
 import nomenclature
+from lib.arg_utils import define_args
+from lib.utils import load_model
+from lib.loggers import NoLogger
 
-parser = argparse.ArgumentParser(description='Do stuff.')
-parser.add_argument('--config_file', type = str, required = True)
-parser.add_argument('--eval_config', type = str, required = True)
-parser.add_argument('--name', type = str, default = 'test')
-parser.add_argument('--group', type = str, default = 'default')
-parser.add_argument('--notes', type = str, default = '')
-parser.add_argument("--mode", type = str, default = 'dryrun')
-parser.add_argument("--env", type = str, default = 'genesis')
-parser.add_argument("--output_dir", type = str, default = 'test')
-
-parser.add_argument('--model', type=str, default = None)
-
-args = parser.parse_args()
-args, cfg = load_args(args)
+args = define_args(
+    extra_args = [
+        ('--eval_config', {'default': '', 'type': str, 'required': True}),
+        ('--output_dir', {'default': '', 'type': str, 'required': True}),
+        ('--checkpoint_kind', {'default': 'best', 'type': str, 'required': False})
+    ])
 
 with open(args.eval_config, 'rt') as f:
     eval_cfg = yaml.load(f, Loader = yaml.FullLoader)
-
-with open('configs/env_config.yaml', 'rt') as f:
-    env_cfg = yaml.load(f, Loader = yaml.FullLoader)
-
-args.environment = env_cfg[args.env]
-
-pprint.pprint(args.__dict__)
-pprint.pprint(eval_cfg)
-
-os.environ['WANDB_MODE'] = args.mode
-os.environ['WANDB_NAME'] = args.name
-os.environ['WANDB_NOTES'] = args.notes
-
-wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
-
-wandb.config.update(vars(args))
 
 architecture = nomenclature.MODELS[args.model](args)
 
@@ -71,7 +30,7 @@ architecture.train(False)
 architecture.to(nomenclature.device)
 
 evaluators = [
-    nomenclature.EVALUATORS[evaluator_name](args, architecture)
+    nomenclature.EVALUATORS[evaluator_name](args, architecture, logger = NoLogger())
     for evaluator_name in eval_cfg['evaluators']
 ]
 
