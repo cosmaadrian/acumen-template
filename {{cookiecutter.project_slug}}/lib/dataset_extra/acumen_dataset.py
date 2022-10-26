@@ -3,10 +3,10 @@ from torchvision import transforms
 from torch.utils.data import Dataset, DataLoader
 
 class AcumenDataset(Dataset):
-	def __init__(self, args, kind = 'train', data_transforms = None):
-		self.args = args
-		self.kind = kind
-		self.transforms = transforms
+    def __init__(self, args, kind = 'train', data_transforms = None):
+        self.args = args
+        self.kind = kind
+        self.transforms = transforms
 
     @classmethod
     def train_dataloader(cls, args, annotations = None):
