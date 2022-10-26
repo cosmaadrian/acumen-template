@@ -50,6 +50,9 @@ class NotALightningTrainer():
         if evaluators is None:
             evaluators = []
 
+        for evaluator in evaluators:
+            evaluator.trainer = self
+
         optimizer = model.configure_optimizers()
         model.trainer = self
         self.model_hook = model.model
@@ -60,7 +63,7 @@ class NotALightningTrainer():
             model.model = model.model.to(lib.device)
 
         # TODO each model should have defined an input shape???
-        summary(self.model_hook, input_shape = (1, self.args.period_length, constants.NUM_JOINTS, constants.NUM_CHANNELS))
+        # summary(self.model_hook, input_shape = (1, self.args.period_length, constants.NUM_JOINTS, constants.NUM_CHANNELS))
 
         self.logger.watch(self.model_hook)
 
