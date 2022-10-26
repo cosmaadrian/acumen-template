@@ -109,8 +109,13 @@ class UpdateCommand(Command):
 
 		Repo.clone_from("https://github.com/cosmaadrian/acumen-template", clone_path)
 		print("::: Updating ... ")
-		shutil.rmtree(local_lib_path)
-		shutil.copytree('{% raw %}' + clone_path + '/{{cookiecutter.project_slug}}/lib/{% endraw %}', local_lib_path)
+		os.rename(local_lib_path, local_lib_path + '.old')
+		try:
+			shutil.copytree('{% raw %}' + clone_path + '/{{cookiecutter.project_slug}}/lib/{% endraw %}', local_lib_path)
+			shutil.rmtree(local_lib_path + '.old')
+		except Exception as e:
+			os.rename(local_lib_path + '.old', local_lib_path)
+			raise e
 		print(f"::: Done! Now at  {latest_version}.")
 
 class CreateCommand(Command):
