@@ -94,14 +94,14 @@ class UpdateCommand(Command):
 			return
 
 		print("::: Getting latest updates ... ")
-		if os.path.exists('/tmp/acumen_template'):
-			shutil.rmtree('/tmp/acumen_template')
+		if os.path.exists('/tmp/acumen-template'):
+			shutil.rmtree('/tmp/acumen-template')
 
 		Repo.clone_from("https://github.com/cosmaadrian/acumen-template", "/tmp/acumen-template/")
 		local_lib_path = os.path.dirname(os.path.abspath(__file__))
 		print("::: Updating ... ")
 		shutil.rmtree(local_lib_path)
-		shutil.copytree({% raw %}'/tmp/acumen-template/{{cookiecutter.project_slug}}/lib/*'{% endraw %}, local_lib_path)
+		shutil.copytree({% raw %}'/tmp/acumen-template/{{cookiecutter.project_slug}}/lib/'{% endraw %}, local_lib_path)
 		print(f"::: Done! Now at  {latest_version}.")
 
 class CreateCommand(Command):
