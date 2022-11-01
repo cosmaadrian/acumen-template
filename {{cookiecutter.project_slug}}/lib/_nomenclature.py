@@ -1,6 +1,6 @@
 import easydict
 
-from .model_extra import CoralHead, ClassificationHead, CoralLoss, AcumenCrossEntropy, MultiLabelHead
+from .model_extra import CoralHead, ClassificationHead, CoralLoss, AcumenBinaryCrossEntropy, AcumenCrossEntropy, MultiLabelHead
 from .trainer_extra import *
 
 NOMENCLATURE = easydict.EasyDict({
@@ -17,6 +17,7 @@ NOMENCLATURE = easydict.EasyDict({
 	'LOSSES': {
 		'coral': CoralLoss,
         'xe': AcumenCrossEntropy,
+        'bce': AcumenBinaryCrossEntropy,
 	},
 
 	'DATASETS': {
