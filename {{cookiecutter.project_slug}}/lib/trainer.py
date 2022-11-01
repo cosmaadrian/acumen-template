@@ -62,12 +62,12 @@ class NotALightningTrainer():
             model.model = nn.DataParallel(model.model)
             model.model = model.model.to(lib.device)
 
-        # TODO each model should have defined an input shape???
-        # summary(self.model_hook, input_shape = (1, self.args.period_length, constants.NUM_JOINTS, constants.NUM_CHANNELS))
-
+        summary(self.model_hook, input_shape = self.model_hook.INPUT_SHAPE)
         self.logger.watch(self.model_hook)
 
         self.scaler = torch.cuda.amp.GradScaler(enabled = bool(self.args.use_amp))
+
+        model.training_start()
 
         for epoch in range(self.args.epochs):
             if self.should_stop:
@@ -124,3 +124,4 @@ class NotALightningTrainer():
             for callback in self.callbacks:
                 callback.on_epoch_end()
 
+        model.training_end()
