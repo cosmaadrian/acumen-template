@@ -89,3 +89,23 @@ class ClassificationHead(torch.nn.Module):
         )
 
         return output_results
+
+class MultiLabelHead(torch.nn.Module):
+    def __init__(self, args, head_args = None):
+        super(MultiLabelHead, self).__init__()
+        self.args = args
+        self.head_args = head_args
+        self.outputs = nn.Linear(self.args.model_args.embedding_size, self.head_args.num_classes)
+
+    def forward(self, model_output: ModelOutput) -> ClassificationOutput:
+        logits = self.outputs(model_output.representation)
+        probas = torch.nn.functional.sigmoid(logits, dim = -1)
+        labels = torch.round(logits)
+
+        output_results = ClassificationOutput(
+            logits = logits,
+            probas = probas,
+            labels = labels
+        )
+
+        return output_results
