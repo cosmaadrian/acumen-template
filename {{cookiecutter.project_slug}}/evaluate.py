@@ -30,8 +30,8 @@ architecture.train(False)
 architecture.to(nomenclature.device)
 
 evaluators = [
-    nomenclature.EVALUATORS[evaluator_name](args, architecture, logger = NoLogger())
-    for evaluator_name in eval_cfg['evaluators']
+    nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args, logger = NoLogger())
+    for evaluator_args in eval_cfg['evaluators']
 ]
 
 for evaluator in evaluators:

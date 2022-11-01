@@ -1,9 +1,10 @@
 import os
 
 class AcumenEvaluator(object):
-    def __init__(self, args, model, logger = None):
+    def __init__(self, args, model, evaluator_args, logger = None):
         self.args = args
         self.model = model
+        self.evaluator_args = evaluator_args
         self.trainer = None
         self._logger = logger
 

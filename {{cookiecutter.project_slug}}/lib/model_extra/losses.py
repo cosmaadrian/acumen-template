@@ -48,7 +48,7 @@ class AcumenBinaryCrossEntropy(torch.nn.Module):
 
     def forward(self, y_true, y_pred, **kwargs):
         return nn.functional.binary_cross_entropy(
-            input = y_pred.logits,
-            target = y_true.view(-1).long(),
+            input = y_pred.logits.view(-1),
+            target = y_true.view(-1),
             weight = self.weights,
         )

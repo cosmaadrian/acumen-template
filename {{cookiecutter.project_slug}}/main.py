@@ -22,8 +22,8 @@ architecture = nomenclature.MODELS[args.model](args)
 model = nomenclature.TRAINER[args.trainer](args, architecture)
 
 evaluators = [
-    nomenclature.EVALUATORS[evaluator_name](args, architecture, evaluator_args)
-    for evaluator_name, evaluator_args in args.evaluators
+    nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args)
+    for evaluator_args in args.evaluators
 ]
 
 wandb_logger = WandbLogger()
