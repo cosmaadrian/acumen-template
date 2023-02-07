@@ -1,6 +1,10 @@
 checkpoints/
 wandb/
 
+configs/test_config.yaml
+test_template.py
+configs/test_include_config.yaml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

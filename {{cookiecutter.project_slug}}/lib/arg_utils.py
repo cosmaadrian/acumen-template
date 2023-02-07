@@ -101,6 +101,21 @@ def update_parser(parser, args):
 
     return parser
 
+def instantiate_references(flattened_args):
+    refs = {}
+    for name, value in flattened_args.items():
+        if not isinstance(value, str):
+            continue
+
+        if value.startswith('${') and value.endswith('}'):
+            refs[name] = flattened_args[value[2:-1]]
+
+    for name, value in refs.items():
+        flattened_args[name] = value
+
+    return flattened_args
+
+
 def define_args(extra_args = None):
     config_path = None
     for i in range(len(sys.argv)):
@@ -135,9 +150,12 @@ def define_args(extra_args = None):
     # Obviously (?) dosen't work with list arguments (such as model heads and losses).
     parser = update_parser(parser = parser, args = cfg_args)
     flattened_args = parser.parse_args()
+    flattened_args = flattened_args.__dict__
+
+    flattened_args = instantiate_references(flattened_args)
 
     # Make an EasyDict with all the args. This is used in all the main actors.
-    nested_args = unflatten_dict_keys({}, flattened_args.__dict__)
+    nested_args = unflatten_dict_keys({}, flattened_args)
     args = easydict.EasyDict(nested_args)
 
     if os.path.exists('configs/env_config.yaml'):
