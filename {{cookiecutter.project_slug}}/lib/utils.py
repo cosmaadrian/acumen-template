@@ -2,10 +2,10 @@ import os
 import glob
 
 import torch
-
+import numpy as np
 
 def load_model(args):
-    checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/checkpoints/{args.group}:{args.name}/*.ckpt'
+    checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/../checkpoints/{args.group}:{args.name}/{args.checkpoint_kind}/*.ckpt'
     print("::: Loading model from", checkpoint_path)
     checkpoints = glob.glob(checkpoint_path)
 
@@ -23,7 +23,7 @@ def load_model_by_dir(name):
     checkpoints = glob.glob(checkpoint_path)
     return torch.load(checkpoints[-1])
 
-def load_model_by_name(name):
-    checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/checkpoints/{name}/*.ckpt'
+def load_model_by_name(name, kind = 'best'):
+    checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/checkpoints/{name}/{kind}/*.ckpt'
     checkpoints = glob.glob(checkpoint_path)
     return torch.load(checkpoints[-1])

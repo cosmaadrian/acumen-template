@@ -1,9 +1,7 @@
 import easydict
 
-from .model_extra import CoralHead, ClassificationHead, CoralLoss, AcumenCrossEntropy
-from .model_extra import MnistCNN
+from .model_extra import CoralHead, ClassificationHead, CoralLoss, AcumenBinaryCrossEntropy, AcumenCrossEntropy, MultiLabelHead
 from .trainer_extra import *
-from .dataset_extra import MnistDataset
 
 NOMENCLATURE = easydict.EasyDict({
 	'TRAINERS': {
@@ -13,19 +11,19 @@ NOMENCLATURE = easydict.EasyDict({
 	'HEADS': {
 		'coral': CoralHead,
 		'classification': ClassificationHead,
+		'multilabel': MultiLabelHead,
 	},
 
 	'LOSSES': {
 		'coral': CoralLoss,
         'xe': AcumenCrossEntropy,
+        'bce': AcumenBinaryCrossEntropy,
 	},
 
 	'DATASETS': {
-        'mnist': MnistDataset,
 	},
 
 	'MODELS': {
-        'mnist-cnn': MnistCNN,
 	},
 
 	'EVALUATORS': {
@@ -39,7 +37,7 @@ import nomenclature
 
 # Merging with user stuff.
 
-for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS']:
+for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS', 'HEADS']:
 	if actor_type not in nomenclature.__dict__:
 		continue
 

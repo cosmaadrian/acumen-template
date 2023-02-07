@@ -21,6 +21,9 @@ class AcumenTrainer(object):
     def validation_epoch_end(self, outputs):
         pass
 
+    def validation_epoch_start(self, outputs):
+        pass
+
     def training_step(self, batch, batch_idx):
         pass
 
@@ -28,4 +31,10 @@ class AcumenTrainer(object):
         pass
 
     def training_epoch_start(self, epoch = None):
+        pass
+
+    def training_end(self):
+        pass
+
+    def training_start(self):
         pass

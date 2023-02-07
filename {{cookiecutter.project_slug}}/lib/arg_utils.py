@@ -101,7 +101,7 @@ def update_parser(parser, args):
 
     return parser
 
-def define_args():
+def define_args(extra_args = None):
     config_path = None
     for i in range(len(sys.argv)):
         if sys.argv[i] == '--config_file':
@@ -126,6 +126,10 @@ def define_args():
     parser.add_argument('--use_amp', type = int, default = 1, required = False)
 
     parser.add_argument('--env', type = str, default = 'env1')
+
+    if extra_args is not None:
+        for name, arguments in extra_args:
+            parser.add_argument(name, **arguments)
 
     # Needed to be able to update nested config keys
     # Obviously (?) dosen't work with list arguments (such as model heads and losses).

@@ -6,16 +6,14 @@ from coral_pytorch.layers import CoralLayer
 
 
 from dataclasses import dataclass
+from typing import NamedTuple
 
-@dataclass(frozen = True)
-class ClassificationOutput:
+class ClassificationOutput(NamedTuple):
     logits: torch.Tensor
     probas: torch.Tensor
     labels: torch.Tensor
 
-
-@dataclass(frozen = True)
-class ModelOutput:
+class ModelOutput(NamedTuple):
     representation: torch.Tensor
 
 
@@ -81,6 +79,26 @@ class ClassificationHead(torch.nn.Module):
         logits = self.outputs(model_output.representation)
         probas = torch.nn.functional.softmax(logits, dim = -1)
         labels = logits.argmax(dim = -1)
+
+        output_results = ClassificationOutput(
+            logits = logits,
+            probas = probas,
+            labels = labels
+        )
+
+        return output_results
+
+class MultiLabelHead(torch.nn.Module):
+    def __init__(self, args, head_args = None):
+        super(MultiLabelHead, self).__init__()
+        self.args = args
+        self.head_args = head_args
+        self.outputs = nn.Linear(self.args.model_args.embedding_size, self.head_args.num_classes)
+
+    def forward(self, model_output: ModelOutput) -> ClassificationOutput:
+        logits = self.outputs(model_output.representation)
+        probas = torch.sigmoid(logits)
+        labels = torch.round(probas)
 
         output_results = ClassificationOutput(
             logits = logits,

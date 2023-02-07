@@ -1,20 +1,20 @@
-from models import *
+import models
 MODELS = {
 
 }
 
-from datasets import *
+import datasets
 DATASETS = {
 
 }
 
-from trainers import *
+import trainers
 TRAINER = {
 
 }
 
 
-from evaluators import *
+import evaluators
 EVALUATORS = {
 
 }
