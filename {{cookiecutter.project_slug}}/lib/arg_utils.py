@@ -118,6 +118,10 @@ def instantiate_references(flattened_args):
 
 def define_args(extra_args = None):
     config_path = None
+
+    # TODO  either resume with `python main.py --resume {group}:{name}`
+    #       or do another experiment with `python main.py --config_file ....` 
+    
     for i in range(len(sys.argv)):
         if sys.argv[i] == '--config_file':
             config_path = sys.argv[i + 1] if len(sys.argv) > i + 1  else None

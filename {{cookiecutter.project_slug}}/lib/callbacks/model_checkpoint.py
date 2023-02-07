@@ -1,5 +1,6 @@
 import os
 import torch
+import json
 
 from .callback import Callback
 
@@ -7,23 +8,23 @@ from .callback import Callback
 class ModelCheckpoint(Callback):
 
     def __init__(self,
+            args,
             name = "ModelCheckpoint",
             monitor = 'val_loss',
             direction = 'down',
             dirpath = 'checkpoints/',
-            save_weights_only = False,
             filename="checkpoint",
             save_best_only = True,
             start_counting_at = 0
         ):
 
+        self.args = args
         self.start_counting_at = start_counting_at
         self.trainer = None
         self.monitor = monitor
         self.name = name
         self.direction = direction
         self.dirpath = dirpath
-        self.save_weights_only = save_weights_only
         self.filename = filename
         self.save_best_only = save_best_only
 
@@ -61,7 +62,18 @@ class ModelCheckpoint(Callback):
         self.previous_best = trainer_quantity
         self.previous_best_path = path
 
-        if self.save_weights_only:
-            torch.save(self.trainer.model_hook.state_dict(), path)
-        else:
-            torch.save(self.trainer.model_hook, path)
+        torch.save({
+                'model_state_dict': self.trainer.model_hook.state_dict(),
+                'optimizer_state_dict': self.trainer.optimizer.state_dict(),
+                'epoch': self.trainer.epoch,
+            },
+            path
+        )
+
+        config_path = os.path.join(self.dirpath, 'config.json')
+
+        if not os.path.exists(config_path):
+            # TODO if is the same path, check if the configs are different.
+        
+            with open(config_path, 'wt') as f:
+                json.dump(self.args, f, indent = 4)

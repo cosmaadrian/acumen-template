@@ -53,7 +53,7 @@ class NotALightningTrainer():
         for evaluator in evaluators:
             evaluator.trainer = self
 
-        optimizer = model.configure_optimizers()
+        self.optimizer = model.configure_optimizers()
         model.trainer = self
         self.model_hook = model.model
 
@@ -81,7 +81,7 @@ class NotALightningTrainer():
             model.training_epoch_start(epoch)
             for i, data in enumerate(pbar):
                 self.global_step += 1
-                optimizer.zero_grad(set_to_none = True)
+                self.optimizer.zero_grad(set_to_none = True)
 
                 for callback in self.callbacks:
                     callback.on_batch_start()
@@ -99,7 +99,7 @@ class NotALightningTrainer():
                 if (i + 1) % self.args.accumulation_steps == 0:
                     torch.nn.utils.clip_grad_norm_(self.model_hook.parameters(), 1.5)
 
-                    self.scaler.step(optimizer)
+                    self.scaler.step(self.optimizer)
                     self.scaler.update()
 
                     for callback in self.callbacks:
