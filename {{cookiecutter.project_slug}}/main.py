@@ -15,11 +15,16 @@ args = define_args()
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
 wandb.config.update(vars(args))
 
-dataset = nomenclature.DATASETS[args.dataset]
+dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 
 architecture = nomenclature.MODELS[args.model](args)
 model = nomenclature.TRAINER[args.trainer](args, architecture)
+
+evaluators = [
+    nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args)
+    for evaluator_args in args.evaluators
+]
 
 wandb_logger = WandbLogger()
 
@@ -45,13 +50,13 @@ checkpoint_callback_last = callbacks.ModelCheckpoint(
 
 
 scheduler = torch.optim.lr_scheduler.CyclicLR(
-    optimizer = model.configure_optimizers(lr = scheduler_args.base_lr),
+    optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
     cycle_momentum = False,
-    base_lr = scheduler_args.base_lr,
-    mode = scheduler_args.mode,
-    step_size_up = len(train_dataloader) * scheduler_args.step_size_up, # per epoch
-    step_size_down = len(train_dataloader) * scheduler_args.step_size_down, # per epoch
-    max_lr = scheduler_args.max_lr
+    base_lr = args.scheduler_args.base_lr,
+    mode = args.scheduler_args.mode,
+    step_size_up = len(train_dataloader) * args.scheduler_args.step_size_up, # per epoch
+    step_size_down = len(train_dataloader) * args.scheduler_args.step_size_down, # per epoch
+    max_lr = args.scheduler_args.max_lr
 )
 
 lr_callback = callbacks.LambdaCallback(
@@ -59,7 +64,7 @@ lr_callback = callbacks.LambdaCallback(
 )
 
 lr_logger = callbacks.LambdaCallback(
-    on_batch_end = lambda: wandb_logger.log('lr', lr_callback.get_last_lr()[0])
+    on_batch_end = lambda: wandb_logger.log('lr', scheduler.get_last_lr()[0])
 )
 
 trainer = NotALightningTrainer(

@@ -1,0 +1,3 @@
+.vscode/
+.DS_Store
+{{cookiecutter.project_slug}}/.DS_Store
