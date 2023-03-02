@@ -89,7 +89,7 @@ class VersionCommand(Command):
     name = "version"
     description = "Show version and exit."
 
-    def run(self, args):
+    def run(self, args = None):
         print(f"{logo} Version {VERSION}. Let's get that bread.")
 
 class UpdateCommand(Command):

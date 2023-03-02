@@ -120,8 +120,8 @@ def define_args(extra_args = None):
     config_path = None
 
     # TODO  either resume with `python main.py --resume {group}:{name}`
-    #       or do another experiment with `python main.py --config_file ....` 
-    
+    #       or do another experiment with `python main.py --config_file ....`
+
     for i in range(len(sys.argv)):
         if sys.argv[i] == '--config_file':
             config_path = sys.argv[i + 1] if len(sys.argv) > i + 1  else None
@@ -141,6 +141,7 @@ def define_args(extra_args = None):
     parser.add_argument('--group', type = str, default = 'default')
     parser.add_argument('--notes', type = str, default = '')
     parser.add_argument("--mode", type = str, default = 'dryrun')
+    parser.add_argument("--debug", type = int, default = 0)
 
     parser.add_argument('--use_amp', type = int, default = 1, required = False)
 
@@ -167,9 +168,23 @@ def define_args(extra_args = None):
             env_cfg = yaml.load(fd, Loader = yaml.FullLoader)
         args.environment = env_cfg[args.env]
 
+    if args.debug:
+        output_string =  "#############################\n"
+        output_string += '#############################\n'
+        output_string += '########🐞DEBUG MODE🐞########\n'
+        output_string += '#############################\n'
+        output_string += '#############################\n'
+
+        print(output_string)
+
+    if args.debug:
+        print("[🐞DEBUG MODE🐞] Changing name to:", args.name + '-DEBUG')
+        print("[🐞DEBUG MODE🐞] Changing WANDB_MODE to 'dryrun'",)
+        args.mode = 'dryrun'
+        args.name = args.name + '-DEBUG'
+
     os.environ['WANDB_MODE'] = args.mode
     os.environ['WANDB_NAME'] = args.name
     os.environ['WANDB_NOTES'] = args.notes
 
     return args
-

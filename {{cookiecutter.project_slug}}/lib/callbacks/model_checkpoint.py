@@ -62,6 +62,12 @@ class ModelCheckpoint(Callback):
         self.previous_best = trainer_quantity
         self.previous_best_path = path
 
+        config_path = os.path.join(self.dirpath, 'config.json')
+
+        if not os.path.exists(config_path):
+            with open(config_path, 'wt') as f:
+                json.dump(self.args, f, indent = 4)
+
         torch.save({
                 'model_state_dict': self.trainer.model_hook.state_dict(),
                 'optimizer_state_dict': self.trainer.optimizer.state_dict(),
@@ -69,11 +75,3 @@ class ModelCheckpoint(Callback):
             },
             path
         )
-
-        config_path = os.path.join(self.dirpath, 'config.json')
-
-        if not os.path.exists(config_path):
-            # TODO if is the same path, check if the configs are different.
-        
-            with open(config_path, 'wt') as f:
-                json.dump(self.args, f, indent = 4)

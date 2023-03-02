@@ -10,6 +10,9 @@ from lib.arg_utils import define_args
 
 from lib import NotALightningTrainer
 from lib import nomenclature
+from lib.forge import VersionCommand
+
+VersionCommand().run()
 
 args = define_args()
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
@@ -64,6 +67,18 @@ lr_callback = callbacks.LambdaCallback(
 lr_logger = callbacks.LambdaCallback(
     on_batch_end = lambda: wandb_logger.log('lr', scheduler.get_last_lr()[0])
 )
+
+if args.debug:
+    print("[🐞DEBUG MODE🐞] Removing ModelCheckpoint ... ")
+    callbacks = [lr_callback, lr_logger]
+else:
+    callbacks = [
+        checkpoint_callback_best,
+        checkpoint_callback_last,
+        lr_callback,
+        lr_logger,
+    ]
+
 
 trainer = NotALightningTrainer(
     args = args,

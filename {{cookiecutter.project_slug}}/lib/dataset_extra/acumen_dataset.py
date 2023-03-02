@@ -13,7 +13,7 @@ class AcumenDataset(Dataset):
 
         return DataLoader(
             dataset,
-            num_workers = 15,
+            num_workers = args.environment.extra_args.num_workers if not args.debug else 1,
             pin_memory = True,
             batch_size = args.batch_size
         )
@@ -26,7 +26,7 @@ class AcumenDataset(Dataset):
             dataset,
             batch_size = args.batch_size,
             shuffle = False,
-            num_workers = 15,
+            num_workers = args.environment.extra_args.num_workers if not args.debug else 1,
             pin_memory = True,
         )
 

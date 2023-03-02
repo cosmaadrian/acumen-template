@@ -6,7 +6,7 @@ import numpy as np
 import tqdm
 
 from .loggers import NoLogger
-import lib 
+import lib
 import constants
 
 
@@ -62,7 +62,11 @@ class NotALightningTrainer():
             model.model = nn.DataParallel(model.model)
             model.model = model.model.to(lib.device)
 
-        summary(self.model_hook, input_shape = self.model_hook.INPUT_SHAPE)
+        try:
+            summary(self.model_hook, input_shape = self.model_hook.INPUT_SHAPE)
+        except Exception as e:
+            print("::: ⚠️WARNING⚠️ could not create model summary ::: ", e)
+
         self.logger.watch(self.model_hook)
 
         self.scaler = torch.cuda.amp.GradScaler(enabled = bool(self.args.use_amp))
@@ -81,7 +85,6 @@ class NotALightningTrainer():
             model.training_epoch_start(epoch)
             for i, data in enumerate(pbar):
                 self.global_step += 1
-                self.optimizer.zero_grad(set_to_none = True)
 
                 for callback in self.callbacks:
                     callback.on_batch_start()
@@ -97,15 +100,22 @@ class NotALightningTrainer():
                 self.scaler.scale(loss).backward()
 
                 if (i + 1) % self.args.accumulation_steps == 0:
+                    self.scaler.unscale_(self.optimizer)
+
                     torch.nn.utils.clip_grad_norm_(self.model_hook.parameters(), 1.5)
 
                     self.scaler.step(self.optimizer)
                     self.scaler.update()
 
+                    self.optimizer.zero_grad(set_to_none = True)
+
                     for callback in self.callbacks:
                         callback.on_batch_end()
 
                 pbar.set_description(f'Epoch {self.epoch} / {self.args.epochs} | ' + ' | '.join([f'{k}={np.round(v, 4)}' for k,v in self.logger.on_step_metrics.items()]))
+                if self.args.debug:
+                    print("[🐞DEBUG MODE🐞] Breaking after one batch ... ")
+                    break
 
             model.training_epoch_end()
             self.epoch += 1
