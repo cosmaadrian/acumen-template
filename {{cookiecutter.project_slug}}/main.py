@@ -21,7 +21,7 @@ dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 
 architecture = nomenclature.MODELS[args.model](args)
-model = nomenclature.TRAINER[args.trainer](args, architecture)
+model = nomenclature.TRAINERS[args.trainer](args, architecture)
 
 evaluators = [
     nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args)
@@ -31,6 +31,7 @@ evaluators = [
 wandb_logger = WandbLogger()
 
 checkpoint_callback_best = callbacks.ModelCheckpoint(
+    args = args,
     name = ' 🔥 Best Checkpoint Overall 🔥',
     monitor = args.model_checkpoint['monitor_quantity'],
     dirpath = f'checkpoints/{args.group}:{args.name}/best/',
@@ -40,6 +41,7 @@ checkpoint_callback_best = callbacks.ModelCheckpoint(
 )
 
 checkpoint_callback_last = callbacks.ModelCheckpoint(
+    args = args,
     name = '🛠️ Last Checkpoint 🛠️',
     monitor = args.model_checkpoint['monitor_quantity'],
     dirpath = f'checkpoints/{args.group}:{args.name}/last/',
