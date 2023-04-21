@@ -9,7 +9,7 @@ DATASETS = {
 }
 
 import trainers
-TRAINER = {
+TRAINERS = {
 
 }
 
