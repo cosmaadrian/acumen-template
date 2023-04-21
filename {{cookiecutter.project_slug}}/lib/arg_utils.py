@@ -1,4 +1,7 @@
 import os
+import pprint
+import socket
+
 from collections import defaultdict
 import argparse
 import sys
@@ -115,24 +118,30 @@ def instantiate_references(flattened_args):
 
     return flattened_args
 
-
-def define_args(extra_args = None):
+def find_config_file():
     config_path = None
-
-    # TODO  either resume with `python main.py --resume {group}:{name}`
-    #       or do another experiment with `python main.py --config_file ....`
-
+    has_equals = False
     for i in range(len(sys.argv)):
-        if sys.argv[i] == '--config_file':
-            config_path = sys.argv[i + 1] if len(sys.argv) > i + 1  else None
+        if '--config_file' in sys.argv[i]:
+            if '=' in sys.argv[i]:
+                config_path = sys.argv[i].split('=')[-1]
+                has_equals = True
+            else:
+                config_path = sys.argv[i + 1] if len(sys.argv) > i + 1  else None
             break
 
     if config_path is None:
         raise Exception('::: --config_file is required!')
 
-    # Removing the config file from args
+    # removing both key and value
     sys.argv.pop(i)
-    sys.argv.pop(i)
+    if not has_equals:
+        sys.argv.pop(i)
+
+    return config_path
+
+def define_args(extra_args = None, verbose = True):
+    config_path = find_config_file()
 
     cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
 
@@ -145,7 +154,7 @@ def define_args(extra_args = None):
 
     parser.add_argument('--use_amp', type = int, default = 1, required = False)
 
-    parser.add_argument('--env', type = str, default = 'env1')
+    parser.add_argument('--env', type = str, default = socket.gethostname())
 
     if extra_args is not None:
         for name, arguments in extra_args:
@@ -186,5 +195,8 @@ def define_args(extra_args = None):
     os.environ['WANDB_MODE'] = args.mode
     os.environ['WANDB_NAME'] = args.name
     os.environ['WANDB_NOTES'] = args.notes
+
+    if verbose:
+        pprint.pprint(args)
 
     return args

@@ -112,6 +112,8 @@ class NotALightningTrainer():
                     for callback in self.callbacks:
                         callback.on_batch_end()
 
+                    model.training_batch_end()
+
                 pbar.set_description(f'Epoch {self.epoch} / {self.args.epochs} | ' + ' | '.join([f'{k}={np.round(v, 4)}' for k,v in self.logger.on_step_metrics.items()]))
                 if self.args.debug:
                     print("[🐞DEBUG MODE🐞] Breaking after one batch ... ")
