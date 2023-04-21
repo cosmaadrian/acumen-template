@@ -68,10 +68,5 @@ class ModelCheckpoint(Callback):
             with open(config_path, 'wt') as f:
                 json.dump(self.args, f, indent = 4)
 
-        torch.save({
-                'model_state_dict': self.trainer.model_hook.state_dict(),
-                'optimizer_state_dict': self.trainer.optimizer.state_dict(),
-                'epoch': self.trainer.epoch,
-            },
-            path
-        )
+        torch.save(self.trainer.model_hook.state_dict(), path + '.model.ckpt')
+        torch.save(self.trainer.optimizer.state_dict(),path + '.optim.ckpt')
