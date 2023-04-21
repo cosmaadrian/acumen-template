@@ -119,7 +119,7 @@ class NotALightningTrainer():
                     print("[🐞DEBUG MODE🐞] Breaking after one batch ... ")
                     break
 
-            model.training_epoch_end()
+            model.training_epoch_end(epoch)
             self.epoch += 1
 
             if (self.epoch + 1) % self.args.eval_every == 0:
