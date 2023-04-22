@@ -31,9 +31,14 @@ class ModelCheckpoint(Callback):
         self.previous_best = None
         self.previous_best_path = None
 
+        self.saved_config = False
 
     def on_epoch_end(self):
         if self.trainer.epoch < self.start_counting_at:
+            return
+
+        if self.monitor not in self.trainer.logger.metrics:
+            print(f"Metric {self.monitor} not found in logger. Skipping checkpoint.")
             return
 
         trainer_quantity = self.trainer.logger.metrics[self.monitor]
@@ -48,12 +53,17 @@ class ModelCheckpoint(Callback):
                     print(f"No improvement. Current: {trainer_quantity} - Previous {self.previous_best}")
                     return
 
-        if self.previous_best_path is not None:
-            os.unlink(self.previous_best_path)
 
         path = os.path.join(self.dirpath, self.filename.format(
             **{'epoch': self.trainer.epoch, self.monitor: trainer_quantity}
         ))
+
+        if self.previous_best_path is not None:
+            previous_optimizer_path = self.previous_best_path + '.optim.ckpt'
+            previous_model_path = self.previous_best_path + '.model.ckpt'
+
+            os.unlink(previous_model_path)
+            os.unlink(previous_optimizer_path)
 
         print(f"[{self.name}] Saving model to: {path}")
 
@@ -64,9 +74,11 @@ class ModelCheckpoint(Callback):
 
         config_path = os.path.join(self.dirpath, 'config.json')
 
-        if not os.path.exists(config_path):
+        if not os.path.exists(config_path) and not self.saved_config:
             with open(config_path, 'wt') as f:
                 json.dump(self.args, f, indent = 4)
+
+            self.saved_config = True
 
         torch.save(self.trainer.model_hook.state_dict(), path + '.model.ckpt')
         torch.save(self.trainer.optimizer.state_dict(),path + '.optim.ckpt')
