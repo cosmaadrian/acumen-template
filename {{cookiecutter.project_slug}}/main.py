@@ -17,6 +17,12 @@ args = define_args()
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group, entity = '{{cookiecutter.project_entity}}')
 wandb.config.update(vars(args))
 
+if args.seed != -1:
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    random.seed(args.seed)
+
 dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 
