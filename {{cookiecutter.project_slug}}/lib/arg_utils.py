@@ -106,6 +106,10 @@ def update_parser(parser, args):
 
             continue
 
+        if isinstance(value, list):
+            parser.add_argument(f'--{key}', type = type(value[0]), default = value, nargs = '+', required = False)
+            continue
+
         if key == 'config_file':
             continue
 
