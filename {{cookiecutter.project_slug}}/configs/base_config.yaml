@@ -1,6 +1,10 @@
 dataset: null
 trainer: null
-evaluators: []
+
+evaluators:
+  - name: my_evaluator
+    args:
+      solution: 42
 
 batch_size: 512
 accumulation_steps: 1
