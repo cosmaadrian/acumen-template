@@ -61,9 +61,8 @@ class NotALightningTrainer():
             # distributed data parallel?? No, cuz we're poor students.
             model.model = nn.DataParallel(model.model)
             model.model = model.model.to(lib.device)
-
         try:
-            summary(self.model_hook, input_shape = self.model_hook.INPUT_SHAPE)
+            summary(self.model_hook)
         except Exception as e:
             print("::: ⚠️WARNING⚠️ could not create model summary ::: ", e)
 
@@ -90,7 +89,8 @@ class NotALightningTrainer():
                     callback.on_batch_start()
 
                 for key in data.keys():
-                    data[key] = data[key].to(lib.device)
+                    if isinstance(data[key], torch.Tensor):
+                        data[key] = data[key].to(lib.device)
 
                 # Autocast to automatically save memory with marginal loss of performance
                 with torch.cuda.amp.autocast(enabled = bool(self.args.use_amp)):
@@ -121,6 +121,7 @@ class NotALightningTrainer():
 
             model.training_epoch_end(epoch)
             self.epoch += 1
+            self.logger.log('epoch', self.epoch, on_step = False, force_log = True)
 
             if (self.epoch + 1) % self.args.eval_every == 0:
                 self.model_hook.train(False)
@@ -129,7 +130,7 @@ class NotALightningTrainer():
                         print(f'[{evaluator.__class__.__name__}] Running evaluation ...')
                         values = evaluator.trainer_evaluate(self.global_step)
                         for key, value in values.items():
-                            self.logger.log(f'{evaluator.__class__.__name__}_{key}', value, on_step = False, force_log = True)
+                            self.logger.log(f'{evaluator.__class__.__name__}_{key}', value, on_step = False, force_log = True, log_extremes = True)
 
                 self.model_hook.train(True)
 
