@@ -1,8 +1,9 @@
 {
-  "full_name": "Adrian Cosma",
-  "email": "cosma.i.adrian@gmail.com",
+  "full_name": "John Galt",
+  "email": "john.galt@atlas.com",
   "project_name": "AcumenProject",
   "project_slug": "acumen-project",
+  "entity_name": "acumen",
   "repo_name": "acumen",
   "project_short_description": "The Acumen."
 }
