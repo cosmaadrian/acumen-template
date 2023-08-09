@@ -32,15 +32,24 @@ def extend_config(cfg_path, child = None):
 def load_args(args):
     cfg = extend_config(cfg_path = f'{args.config_file}', child = None)
 
-    if cfg is not None:
-        for key, value in cfg.items():
-            if key in args and args.__dict__[key] is not None:
-                continue
+    if cfg is None:
+        return args, cfg
 
-            if not isinstance(args, dict):
-                args.__dict__[key] = value
-            else:
-                args[key] = value
+    if '$includes$' in cfg:
+        included_cfg = {}
+        for included_cfg_path in cfg['$includes$']:
+            included_cfg = {**included_cfg, ** extend_config(cfg_path = included_cfg_path, child = None)}
+
+        cfg = {**cfg, **included_cfg}
+
+    for key, value in cfg.items():
+        if key in args and args.__dict__[key] is not None:
+            continue
+
+        if not isinstance(args, dict):
+            args.__dict__[key] = value
+        else:
+            args[key] = value
 
     return args, cfg
 
