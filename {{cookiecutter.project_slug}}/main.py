@@ -14,7 +14,7 @@ from lib.forge import VersionCommand
 VersionCommand().run()
 
 args = define_args()
-wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
+wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group, entity = '{{cookiecutter.project_entity}}')
 wandb.config.update(vars(args))
 
 dataset = nomenclature.DATASETS[args.dataset](args = args)
