@@ -87,12 +87,7 @@ else:
 
 trainer = NotALightningTrainer(
     args = args,
-    callbacks = [
-        checkpoint_callback_best,
-        checkpoint_callback_last,
-        lr_callback,
-        lr_logger
-    ],
+    callbacks = callbacks,
     logger=wandb_logger,
 )
 
