@@ -1,7 +1,7 @@
 import yaml
 import pprint
 
-import nomenclature
+from lib import nomenclature
 from lib.arg_utils import define_args
 from lib.utils import load_model
 from lib.loggers import NoLogger
