@@ -1,4 +1,5 @@
 import os
+import torch
 
 class AcumenEvaluator(object):
     def __init__(self, args, model, evaluator_args = None, logger = None):
@@ -18,8 +19,10 @@ class AcumenEvaluator(object):
 
         return self.trainer.logger
 
+    @torch.no_grad()
     def evaluate(self):
         raise NotImplementedError
 
+    @torch.no_grad()
     def trainer_evaluate(self):
         raise NotImplementedError
