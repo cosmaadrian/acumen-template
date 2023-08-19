@@ -9,7 +9,12 @@ from git.repo.base import Repo
 import shutil
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
-from lib.__version__ import VERSION
+
+if __name__ == '__main__':
+    from __version__ import VERSION
+else:
+    from lib.__version__ import VERSION
+
 
 """
     python lib/forge.py list
