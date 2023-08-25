@@ -8,14 +8,14 @@ from torch import nn
 from lib import device
 
 class CoralLoss(torch.nn.Module):
-	def __init__(self, args, loss_args):
-		super(CoralLoss, self).__init__()
-		self.args = args
-		self.loss_args = loss_args
+    def __init__(self, args, loss_args):
+    	super(CoralLoss, self).__init__()
+    	self.args = args
+    	self.loss_args = loss_args
 
-	def forward(self, y_true, y_pred, **kwargs):
-		levels = levels_from_labelbatch(y_true.view(-1).long(), num_classes = self.loss_args.num_classes).to(device)
-		return coral_loss(y_pred.logits, levels)
+    def forward(self, y_true, y_pred, **kwargs):
+        levels = levels_from_labelbatch(y_true.view(-1).long(), num_classes = self.loss_args.num_classes).to(device)
+        return coral_loss(y_pred.logits, levels)
 
 class AcumenCrossEntropy(torch.nn.Module):
     def __init__(self, args, loss_args):
@@ -24,7 +24,7 @@ class AcumenCrossEntropy(torch.nn.Module):
         self.loss_args = loss_args
         
         if 'weights' in self.loss_args:
-            self.weights = self.loss_args.weights
+            self.weights = torch.tensor(self.loss_args.weights).to(device)
         else:
             self.weights = None
     
@@ -42,7 +42,7 @@ class AcumenBinaryCrossEntropy(torch.nn.Module):
         self.loss_args = loss_args
 
         if 'weights' in self.loss_args:
-            self.weights = self.loss_args.weights
+            self.weights = torch.tensor(self.loss_args.weights).to(device)
         else:
             self.weights = None
 
