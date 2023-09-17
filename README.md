@@ -1,4 +1,4 @@
-<h1 align="center"><span style="font-weight:normal">Acumen Deep Learning Research Project ✨ Template ✨</h1>
+<h1 align="center"><span style="font-weight:normal"> <img src="assets/icon.png" alt="drawing" style="width:30px;"/> Acumen Deep Learning Research Project ✨ Template ✨</h1>
 
 Before starting any deep-learning project, use this template to make your life as a researcher easier.
 
