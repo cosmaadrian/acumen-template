@@ -3,7 +3,7 @@
   "email": "john.galt@atlas.com",
   "project_name": "AcumenProject",
   "project_slug": "acumen-project",
-  "entity_name": "acumen",
+  "project_entity": "acumen",
   "repo_name": "acumen",
   "project_short_description": "The Acumen."
 }
