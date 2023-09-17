@@ -1,8 +1,15 @@
-# Acumen Deep Learning Research Template
+# Acumen Deep Learning Research Project ✨ Template ✨
 
 Before starting any deep-learning project, use this template to make your life as a researcher easier.
 
 Keep your sanity! Work with `wandb` (included by default)!
+
+### Open Source projects that used **✨ The Template ✨**
+
+-  [It’s Just a Matter of Time: Detecting Depression with Time-Enriched Multimodal Transformers](https://github.com/cosmaadrian/time-enriched-multimodal-depression-detection)
+-  [Learning Gait Representations with Noisy Multi-Task Learning](https://github.com/cosmaadrian/gaitformer)
+-  [Exploring Self-Supervised Vision Transformers for Gait Recognition in the Wild](https://github.com/cosmaadrian/gait-vit)
+-  [Reading Between the Frames: Multi-Modal Depression Detection in Videos from Non-Verbal Cues]()
 
 ### Usage:
 
@@ -34,26 +41,50 @@ You can use the `lib/forge.py` command line tool to better manage your project. 
 	python lib/forge.py help
 ```
 
-### Generating classes for Datasets, Models, Trainers and Evaluators using `🔧Forge`
+### Adding classes for Datasets, Models, Trainers and Evaluators using `🔧Forge`
 
-Datasets, Models and Trainers must be placed in the appropriate directory, added to their respective `__init__.py` file, and added to the `nomenclature.py` file. This process can be time consuming and / or confusing at first.
-
-To automatically generate such a boilerplate class use the `forge.py` script:
-
-```
-	python lib/forge.py create dataset:MyDatasetClassName:my-dataset-class_name
-	python lib/forge.py create model:MyModelClassName:my-model-class_name
-	python lib/forge.py create trainer:MyTrainerClassName:my-trainer-class_name
-```
-
-This will add boilerplate code in the respective directories, add class names to the `__init__.py` file and add snake-case names to the `nomenclature.py` file.
-
+Datasets, Models and Trainers must be placed in the appropriate directory, added to their respective `__init__.py` file, and added to the `nomenclature.py` file.
 
 ### Structure for the configuration file.
 
 You'll get the hang of it!
 
-Don't forget to use `$extends$: ...` in a config file if you want to extend it.
+#### Extending configs.
+Use `$extends$: <path>` in a config file if you want to extend it.
+
+*configs/a.yaml*
+```
+foo: bar
+```
+
+*configs/b.yaml*
+```
+$extends$: configs/a.yaml
+baz: zab
+```
+Running with this config file will result in ```args == {'foo': bar, 'baz': zab}```
+
+#### Including other configs
+Use ```$includes$: [<path1>, <path2>, ...]``` to include other configuration files directly.
+*configs/a.yaml*
+```
+foo: bar
+```
+
+*configs/b.yaml*
+```
+$includes$:
+	- configs/a.yaml
+```
+Running with this config file will result in ```args == {'foo': bar}```
+
+#### Referencing other values
+You can reference another value from the current configuration using the ```value = ${other_value}``` syntax.
+```
+a: b
+c: ${a}
+```
+Running with this config file will result in ```args == {'a': b, 'c': b}```
 
 ### Update to the latest version
 
