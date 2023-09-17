@@ -17,12 +17,6 @@ args = define_args()
 wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group, entity = '{{cookiecutter.project_entity}}')
 wandb.config.update(vars(args))
 
-if args.seed != -1:
-    torch.manual_seed(args.seed)
-    torch.cuda.manual_seed(args.seed)
-    np.random.seed(args.seed)
-    random.seed(args.seed)
-
 dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 
@@ -76,14 +70,18 @@ lr_logger = callbacks.LambdaCallback(
 
 if args.debug:
     print("[🐞DEBUG MODE🐞] Removing ModelCheckpoint ... ")
-    callbacks = [lr_callback, lr_logger]
+    checkpoint_callback_best.actually_save = False
+    checkpoint_callback_last.actually_save = False
 else:
-    callbacks = [
-        checkpoint_callback_best,
-        checkpoint_callback_last,
-        lr_callback,
-        lr_logger,
-    ]
+    checkpoint_callback_best.actually_save = bool(args.save_model)
+    checkpoint_callback_last.actually_save = bool(args.save_model)
+
+callbacks = [
+    checkpoint_callback_best,
+    checkpoint_callback_last,
+    lr_callback,
+    lr_logger,
+]
 
 trainer = NotALightningTrainer(
     args = args,

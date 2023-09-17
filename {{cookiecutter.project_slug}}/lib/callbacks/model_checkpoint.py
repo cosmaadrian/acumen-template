@@ -16,7 +16,7 @@ class ModelCheckpoint(Callback):
             filename="checkpoint",
             save_best_only = True,
             start_counting_at = 0,
-            actually_save = True
+            actually_save = True,
         ):
 
         self.args = args
@@ -35,12 +35,17 @@ class ModelCheckpoint(Callback):
 
         self.saved_config = False
 
+        if not bool(self.args.override_checkpoints):
+            # check if directory exists and is empty
+            if os.path.exists(self.dirpath) and os.listdir(self.dirpath):
+                raise Exception(f"⚠️ Directory {self.dirpath} exists and is not empty.")
+
     def on_epoch_end(self):
         if self.trainer.epoch < self.start_counting_at:
             return
 
         if self.monitor not in self.trainer.logger.metrics:
-            print(f"Metric {self.monitor} not found in logger. Skipping checkpoint.")
+            print(f"[ModelCheckpoint] ⚠️ Metric {self.monitor} not found in logger. Skipping checkpoint.")
             return
 
         trainer_quantity = self.trainer.logger.metrics[self.monitor]

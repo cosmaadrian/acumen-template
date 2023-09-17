@@ -24,7 +24,7 @@ class AcumenDataset(Dataset):
 
         return DataLoader(
             dataset,
-            batch_size = args.batch_size,
+            batch_size = args.eval_batch_size,
             shuffle = False,
             num_workers = args.environment.extra_args.num_workers if not args.debug else 1,
             pin_memory = True,

@@ -1,3 +1,7 @@
+import torch
+import random
+import numpy as np
+
 import os
 import pprint
 import socket
@@ -196,18 +200,30 @@ def define_args(extra_args = None, verbose = True, require_config_file = True):
 
     if args.debug:
         output_string =  "#############################\n"
-        output_string += '#############################\n'
         output_string += '########🐞DEBUG MODE🐞########\n'
         output_string += '#############################\n'
-        output_string += '#############################\n'
-
         print(output_string)
 
-    if args.debug:
+        print('[🐞DEBUG MODE🐞] Overriding seed argument...')
+        args.seed = 69
+
         print("[🐞DEBUG MODE🐞] Changing name to:", args.name + '-DEBUG')
+        args.name = args.name + '-DEBUG'
+
         print("[🐞DEBUG MODE🐞] Changing WANDB_MODE to 'dryrun'",)
         args.mode = 'dryrun'
-        args.name = args.name + '-DEBUG'
+
+    if args.seed != -1:
+        output_string += '##################################################\n'
+        output_string += f'########🌱🌱🌱 Setting random seed to {args.seed} 🌱🌱🌱########\n'
+        output_string += '##################################################\n'
+
+        torch.manual_seed(args.seed)
+        torch.cuda.manual_seed(args.seed)
+        np.random.seed(args.seed)
+        random.seed(args.seed)
+
+        print(output_string)
 
     os.environ['WANDB_MODE'] = args.mode
     os.environ['WANDB_NAME'] = args.name

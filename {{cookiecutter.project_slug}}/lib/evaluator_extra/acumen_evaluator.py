@@ -1,6 +1,8 @@
 import os
-from .acumen_metrics import MetricCollection, Metric
 import torch
+from .acumen_metrics import MetricCollection, Metric
+import inflection
+
 
 class AcumenEvaluator(object):
     def __init__(self, args, model, evaluator_args = None, logger = None):
@@ -15,8 +17,7 @@ class AcumenEvaluator(object):
 
     @property
     def display_name(self):
-        # TODO maybe in snake case, by default
-        return self.__class__.__name__
+        return inflection.underscore(self.__class__.__name__)
 
     @property
     def logger(self):

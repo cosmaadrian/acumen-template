@@ -7,7 +7,6 @@ import tqdm
 
 from .loggers import NoLogger
 import lib
-import constants
 
 from colorama import init as colorama_init
 from colorama import Fore
@@ -107,7 +106,8 @@ class NotALightningTrainer():
                 if (i + 1) % self.args.accumulation_steps == 0:
                     self.scaler.unscale_(self.optimizer)
 
-                    torch.nn.utils.clip_grad_norm_(self.model_hook.parameters(), 1.5)
+                    if bool(self.args.clip_grad_norm):
+                        torch.nn.utils.clip_grad_norm_(self.model_hook.parameters(), self.args.max_grad_norm)
 
                     self.scaler.step(self.optimizer)
                     self.scaler.update()
@@ -121,7 +121,7 @@ class NotALightningTrainer():
 
                 progress_string = f'[{Fore.GREEN}{self.args.group}{Style.RESET_ALL}:{Fore.RED}{self.args.name}{Style.RESET_ALL}] ' + \
                     f'Epoch {self.epoch} / {self.args.epochs} | ' + ' | '.join([
-                    f'{k}={np.round(v, 4)}' for k,v in self.logger.on_step_metrics.items()
+                    f'{k}={np.round(np.mean(v), 4)}' for k,v in self.logger.on_step_metrics.items()
                 ])
 
                 pbar.set_description(progress_string)

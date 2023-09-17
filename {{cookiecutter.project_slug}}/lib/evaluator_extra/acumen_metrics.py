@@ -1,4 +1,7 @@
 
+INCREASING_METRICS = ['accuracy', 'f1', 'precision', 'recall']
+DECREASING_METRICS = ['loss', 'error', 'mae', 'mse']
+
 class MetricCollection(object):
     def __init__(self, evaluator, metrics = None):
         self.metrics = metrics
@@ -14,34 +17,37 @@ class MetricCollection(object):
             metric.log(logger)
 
 class Metric(object):
-    def __init__(self, name, value, log_direction = None):
+    def __init__(self, name, value, monotonicity = None):
         self.name = name
         self.value = value
-        self.log_direction = log_direction
+        self.monotonicity = monotonicity
 
-        if log_direction is None:
-            # TODO add more metrics for best UX on the planet
-            if ('f1' in self.name) or \
-                    ('accuracy' in self.name) or\
-                    ('precision' in self.name) or\
-                    ('recall' in self.name):
+        if monotonicity is None:
+            if any([metric in self.name for metric in INCREASING_METRICS]):
+                self.monotonicity = ['instant', 'up']
 
-                self.log_direction = 'up'
-
-            elif ('loss' in self.name) or ('error' in self.name) or ('mae' in self.name) or ('mse' in self.name):
-                self.log_direction = 'down'
+            elif any([metric in self.name for metric in DECREASING_METRICS]):
+                self.monotonicity = ['instant', 'down']
 
             else:
-                self.log_direction = None
+                self.monotonicity = ['instant']
 
     def log(self, logger):
-        if self.log_direction == 'up':
-            log_max = True
-        elif self.log_direction == 'down':
-            log_min = True
-        elif self.log_direction == 'both':
-            log_min = True
+        if 'up' in self.monotonicity:
             log_max = True
 
-        # TODO add log direction
-        logger.log(f'{self.evaluator.display_name}#{self.name}', self.value, on_step = False, force_log = True)
+        if 'down' in self.monotonicity:
+            log_min = True
+
+        if 'instant' in self.monotonicity:
+            log_instant = True
+
+        logger.log(
+            f'{self.evaluator.display_name}#{self.name}',
+            self.value,
+            on_step = False,
+            force_log = True,
+            log_max = log_max,
+            log_min = log_min,
+            log_instant = log_instant
+        )

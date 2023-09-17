@@ -8,15 +8,20 @@ evaluators:
     args:
       solution: 42
 
+epochs: 300
 batch_size: 512
-accumulation_steps: 1
+eval_batch_size: ${batch_size}
 
+accumulation_steps: 1
+clip_grad_norm: 1
+max_grad_norm: 1.5
+eval_every: 1
+
+save_model: 1
+override_checkpoints: 0
 model_checkpoint:
   monitor_quantity: <TODO>
   direction: up
-
-epochs: 300
-eval_every: 1
 
 lr_scheduler:
   start_epoch: 0

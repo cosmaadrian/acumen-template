@@ -15,6 +15,7 @@ VersionCommand().run()
 args = define_args(
     require_config_file = False,
     extra_args = [
+        ('--eval_batch_size', {'default': None, 'type': str, 'required': False})
         ('--eval_config', {'default': '', 'type': str, 'required': True}),
         ('--output_dir', {'default': '', 'type': str, 'required': True}),
         ('--checkpoint_kind', {'default': 'best', 'type': str, 'required': False})
@@ -24,6 +25,10 @@ with open(args.eval_config, 'rt') as f:
     eval_cfg = EasyDict(yaml.load(f, Loader = yaml.FullLoader))
 
 model_config = load_config(args)
+
+if args.eval_batch_size is None:
+    args.eval_batch_size = model_config['eval_batch_size']
+
 args = EasyDict({**model_config, **args})
 
 architecture = nomenclature.MODELS[args.model](args)

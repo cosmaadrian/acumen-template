@@ -1,0 +1,5 @@
+inflection
+coral-pytorch
+tqdm
+colorama
+torchinfo
