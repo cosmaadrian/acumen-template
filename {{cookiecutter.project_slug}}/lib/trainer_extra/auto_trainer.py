@@ -1,6 +1,5 @@
 from .acumen_trainer import AcumenTrainer
 
-
 class AutoTrainer(AcumenTrainer):
 
     def __init__(self, args, model):
@@ -20,12 +19,25 @@ class AutoTrainer(AcumenTrainer):
         for head_name, model_output in outputs.items():
             if head_name not in self.losses:
                 continue
-            loss = self.losses[head_name](y_true = batch['labels'], y_pred = model_output)
+
+            label_key = 'label'
+            if 'label_key' in self.losses[head_name].loss_args:
+                label_key = self.losses[head_name].loss_args.label_key
+
+            weight = 1.0
+            if 'weight' in self.losses[head_name].loss_args:
+                weight = self.losses[head_name].loss_args.weight
+
+            loss = self.losses[head_name](y_true = batch[label_key], y_pred = model_output)
+            loss = weight * loss
+
             losses = losses + loss
 
             self.log(f'train/loss:{head_name}', loss.item())
 
         final_loss = losses / len(outputs.keys())
 
-        self.log('train/loss:final', final_loss.item(), on_step = True)
+        if len(outputs.keys()) > 1:
+            self.log('train/loss:final', final_loss.item(), on_step = True)
+
         return final_loss

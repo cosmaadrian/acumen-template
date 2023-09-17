@@ -20,6 +20,7 @@ accumulation_steps: 1
 clip_grad_norm: 1
 max_grad_norm: 1.5
 eval_every: 1
+log_every: 5
 
 save_model: 1
 override_checkpoints: 0

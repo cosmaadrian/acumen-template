@@ -55,4 +55,4 @@ class AcumenEvaluator(object):
         elif isinstance(outputs, Metric):
             metric_collection.append(outputs)
 
-        metric_collection.log(self._logger)
+        metric_collection.log(self.logger)

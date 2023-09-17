@@ -138,7 +138,7 @@ class NotALightningTrainer():
                 with torch.no_grad():
                     for evaluator in evaluators:
                         print(f'[{evaluator.display_name}] Running evaluation ...')
-                        self.evaluator.evaluate_and_log(self.global_step)
+                        evaluator.evaluate_and_log(self.global_step)
 
                 self.model_hook.train(True)
 

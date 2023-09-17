@@ -1,4 +1,3 @@
-
 INCREASING_METRICS = ['accuracy', 'f1', 'precision', 'recall']
 DECREASING_METRICS = ['loss', 'error', 'mae', 'mse']
 
@@ -14,7 +13,8 @@ class MetricCollection(object):
 
     def log(self, logger):
         for metric in self.metrics:
-            metric.log(logger)
+            # this sucks, but oh well
+            metric.log(logger, evaluator = self.evaluator)
 
 class Metric(object):
     def __init__(self, name, value, monotonicity = None):
@@ -32,7 +32,11 @@ class Metric(object):
             else:
                 self.monotonicity = ['instant']
 
-    def log(self, logger):
+    def log(self, logger, evaluator):
+        log_min = False
+        log_max = False
+        log_instant = False
+
         if 'up' in self.monotonicity:
             log_max = True
 
@@ -43,7 +47,7 @@ class Metric(object):
             log_instant = True
 
         logger.log(
-            f'{self.evaluator.display_name}#{self.name}',
+            f'{evaluator.display_name}#{self.name}',
             self.value,
             on_step = False,
             force_log = True,
