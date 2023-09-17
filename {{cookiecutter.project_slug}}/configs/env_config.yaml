@@ -1,2 +1,9 @@
+# Environment name
 env1:
+    # Global path to the data
     data-path-1: ''
+
+    extra_args:
+
+        # Number of workers for data loading
+        num_workers: 4

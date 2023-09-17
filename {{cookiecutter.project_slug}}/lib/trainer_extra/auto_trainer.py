@@ -1,12 +1,11 @@
-import torch
-import torch.nn as nn
 from .acumen_trainer import AcumenTrainer
+
 
 class AutoTrainer(AcumenTrainer):
 
     def __init__(self, args, model):
         super().__init__(args, model)
-        
+
         from lib import nomenclature
 
         self.losses = {

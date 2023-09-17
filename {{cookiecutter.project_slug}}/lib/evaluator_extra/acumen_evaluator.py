@@ -17,7 +17,7 @@ class AcumenEvaluator(object):
 
     @property
     def display_name(self):
-        return inflection.underscore(self.__class__.__name__)
+        return inflection.underscore(self.__class__.__name__).replace('_evaluator', '')
 
     @property
     def logger(self):

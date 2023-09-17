@@ -1,5 +1,8 @@
 dataset: null
-trainer: null
+
+# Use AutoTrainer in conjunction with lib.model_extra.outputs.MultiHead
+# and define the appropriate losses based on the head name
+trainer: auto
 
 run_id: 1
 
@@ -8,6 +11,7 @@ evaluators:
     args:
       solution: 42
 
+seed: -1 # no seed
 epochs: 300
 batch_size: 512
 eval_batch_size: ${batch_size}
@@ -23,7 +27,7 @@ model_checkpoint:
   monitor_quantity: <TODO>
   direction: up
 
-lr_scheduler:
+scheduler_args:
   start_epoch: 0
   end_epoch: 300
   base_lr: 0.0001
