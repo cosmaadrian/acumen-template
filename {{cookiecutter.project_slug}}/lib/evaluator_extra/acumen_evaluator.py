@@ -32,6 +32,7 @@ class AcumenEvaluator(object):
 
     @torch.no_grad()
     def trainer_evaluate(self, global_step = -1):
+        # returns a dictionary or a list of dicts or a list of metrics or just a metric
         raise NotImplementedError
 
     def evaluate_and_log(self, global_step = -1):
@@ -39,11 +40,19 @@ class AcumenEvaluator(object):
 
         metric_collection = MetricCollection(evaluator = self)
 
-        for output in outputs:
-            if isinstance(output, Metric):
-                metric_collection.append(output)
-            else:
-                key, value = output
+        if isinstance(outputs, dict):
+            for key, value in outputs.items():
                 metric_collection.append(Metric(name = key, value = value))
+
+        elif isinstance(outputs, list):
+            for output in outputs:
+                if isinstance(output, dict):
+                    for key, value in output.items():
+                        metric_collection.append(Metric(name = key, value = value))
+                else:
+                    metric_collection.append(output)
+
+        elif isinstance(outputs, Metric):
+            metric_collection.append(outputs)
 
         metric_collection.log(self._logger)
