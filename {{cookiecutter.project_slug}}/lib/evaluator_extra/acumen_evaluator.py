@@ -1,4 +1,5 @@
 import os
+from .acumen_metrics import MetricCollection, Metric
 
 class AcumenEvaluator(object):
     def __init__(self, args, model, evaluator_args = None, logger = None):
@@ -12,6 +13,11 @@ class AcumenEvaluator(object):
             os.makedirs(f'results/{self.args.output_dir}', exist_ok = True)
 
     @property
+    def display_name(self):
+        # TODO maybe in snake case, by default
+        return self.__class__.__name__
+
+    @property
     def logger(self):
         if self.trainer is None:
             return self._logger
@@ -21,5 +27,21 @@ class AcumenEvaluator(object):
     def evaluate(self):
         raise NotImplementedError
 
-    def trainer_evaluate(self):
+    def trainer_evaluate(self, global_step = -1):
         raise NotImplementedError
+
+    def evaluate_and_log(self, global_step = -1):
+        outputs = self.trainer_evaluate(global_step)
+
+        metric_collection = MetricCollection(evaluator = self)
+
+        for output in outputs:
+            if isinstance(output, Metric):
+                metric_collection.append(output)
+            else:
+                key, value = output
+                metric_collection.append(Metric(name = key, value = value))
+
+        metric_collection.log(self._logger)
+        # for key, value in values.items():
+        #     self.logger.log(f'{evaluator.__class__.__name__}_{key}', value, on_step = False, force_log = True)

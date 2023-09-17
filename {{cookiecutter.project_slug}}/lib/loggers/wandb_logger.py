@@ -1,5 +1,9 @@
 import wandb
 
+# TODO
+# log only min / log only max / log both
+# use a moving average for on-step-metrics
+
 class WandbLogger(object):
     def __init__(self):
         self.on_step_metrics = dict()
