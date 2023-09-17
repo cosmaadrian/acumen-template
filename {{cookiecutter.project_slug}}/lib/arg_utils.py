@@ -1,4 +1,7 @@
 import os
+import pprint
+import socket
+
 from collections import defaultdict
 import argparse
 import sys
@@ -29,15 +32,25 @@ def extend_config(cfg_path, child = None):
 def load_args(args):
     cfg = extend_config(cfg_path = f'{args.config_file}', child = None)
 
-    if cfg is not None:
-        for key, value in cfg.items():
-            if key in args and args.__dict__[key] is not None:
-                continue
+    if cfg is None:
+        return args, cfg
 
-            if not isinstance(args, dict):
-                args.__dict__[key] = value
-            else:
-                args[key] = value
+    if '$includes$' in cfg:
+        included_cfg = {}
+        for included_cfg_path in cfg['$includes$']:
+            included_cfg = {**included_cfg, ** extend_config(cfg_path = included_cfg_path, child = None)}
+
+        cfg = {**cfg, **included_cfg}
+        del cfg['$includes$']
+
+    for key, value in cfg.items():
+        if key in args and args.__dict__[key] is not None:
+            continue
+
+        if not isinstance(args, dict):
+            args.__dict__[key] = value
+        else:
+            args[key] = value
 
     return args, cfg
 
@@ -94,6 +107,10 @@ def update_parser(parser, args):
 
             continue
 
+        if isinstance(value, list):
+            parser.add_argument(f'--{key}', type = type(value[0]), default = value, nargs = '+', required = False)
+            continue
+
         if key == 'config_file':
             continue
 
@@ -115,26 +132,35 @@ def instantiate_references(flattened_args):
 
     return flattened_args
 
-
-def define_args(extra_args = None):
+def find_config_file():
     config_path = None
-
-    # TODO  either resume with `python main.py --resume {group}:{name}`
-    #       or do another experiment with `python main.py --config_file ....`
-
+    has_equals = False
     for i in range(len(sys.argv)):
-        if sys.argv[i] == '--config_file':
-            config_path = sys.argv[i + 1] if len(sys.argv) > i + 1  else None
+        if '--config_file' in sys.argv[i]:
+            if '=' in sys.argv[i]:
+                config_path = sys.argv[i].split('=')[-1]
+                has_equals = True
+            else:
+                config_path = sys.argv[i + 1] if len(sys.argv) > i + 1  else None
             break
 
     if config_path is None:
         raise Exception('::: --config_file is required!')
 
-    # Removing the config file from args
+    # removing both key and value
     sys.argv.pop(i)
-    sys.argv.pop(i)
+    if not has_equals:
+        sys.argv.pop(i)
 
-    cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
+    return config_path
+
+def define_args(extra_args = None, verbose = True, require_config_file = True):
+
+    if require_config_file:
+        config_path = find_config_file()
+        cfg_args, _ = load_args(argparse.Namespace(config_file = config_path))
+    else:
+        cfg_args = argparse.Namespace(_={})
 
     parser = argparse.ArgumentParser(description='Do stuff.')
     parser.add_argument('--name', type = str, default = 'test')
@@ -145,7 +171,7 @@ def define_args(extra_args = None):
 
     parser.add_argument('--use_amp', type = int, default = 1, required = False)
 
-    parser.add_argument('--env', type = str, default = 'env1')
+    parser.add_argument('--env', type = str, default = socket.gethostname())
 
     if extra_args is not None:
         for name, arguments in extra_args:
@@ -186,5 +212,8 @@ def define_args(extra_args = None):
     os.environ['WANDB_MODE'] = args.mode
     os.environ['WANDB_NAME'] = args.name
     os.environ['WANDB_NOTES'] = args.notes
+
+    if verbose:
+        pprint.pprint(args)
 
     return args

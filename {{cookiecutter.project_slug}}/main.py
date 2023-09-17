@@ -3,7 +3,6 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 
 import wandb
 
-
 import lib.callbacks as callbacks
 from lib.loggers import WandbLogger
 from lib.arg_utils import define_args
@@ -15,14 +14,20 @@ from lib.forge import VersionCommand
 VersionCommand().run()
 
 args = define_args()
-wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group)
+wandb.init(project = '{{cookiecutter.project_slug}}', group = args.group, entity = '{{cookiecutter.project_entity}}')
 wandb.config.update(vars(args))
+
+if args.seed != -1:
+    torch.manual_seed(args.seed)
+    torch.cuda.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    random.seed(args.seed)
 
 dataset = nomenclature.DATASETS[args.dataset](args = args)
 train_dataloader = nomenclature.DATASETS[args.dataset].train_dataloader(args)
 
 architecture = nomenclature.MODELS[args.model](args)
-model = nomenclature.TRAINER[args.trainer](args, architecture)
+model = nomenclature.TRAINERS[args.trainer](args, architecture)
 
 evaluators = [
     nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args)
@@ -32,23 +37,24 @@ evaluators = [
 wandb_logger = WandbLogger()
 
 checkpoint_callback_best = callbacks.ModelCheckpoint(
+    args = args,
     name = ' 🔥 Best Checkpoint Overall 🔥',
     monitor = args.model_checkpoint['monitor_quantity'],
     dirpath = f'checkpoints/{args.group}:{args.name}/best/',
     save_best_only = True,
     direction = args.model_checkpoint['direction'],
-    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-{args.model_checkpoint["monitor_quantity"]}={% raw %}{{{args.model_checkpoint["monitor_quantity"]}:.4f}}{% endraw %}.ckpt',
+    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-{args.model_checkpoint["monitor_quantity"]}={% raw %}{{{args.model_checkpoint["monitor_quantity"]}:.4f}}{% endraw %}',
 )
 
 checkpoint_callback_last = callbacks.ModelCheckpoint(
+    args = args,
     name = '🛠️ Last Checkpoint 🛠️',
     monitor = args.model_checkpoint['monitor_quantity'],
     dirpath = f'checkpoints/{args.group}:{args.name}/last/',
     save_best_only = False,
     direction = args.model_checkpoint['direction'],
-    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-{args.model_checkpoint["monitor_quantity"]}={% raw %}{{{args.model_checkpoint["monitor_quantity"]}:.4f}}{% endraw %}.ckpt',
+    filename=f'epoch={% raw %}{{epoch}}{% endraw %}-{args.model_checkpoint["monitor_quantity"]}={% raw %}{{{args.model_checkpoint["monitor_quantity"]}:.4f}}{% endraw %}',
 )
-
 
 scheduler = torch.optim.lr_scheduler.CyclicLR(
     optimizer = model.configure_optimizers(lr = args.scheduler_args.base_lr),
@@ -79,15 +85,9 @@ else:
         lr_logger,
     ]
 
-
 trainer = NotALightningTrainer(
     args = args,
-    callbacks = [
-        checkpoint_callback_best,
-        checkpoint_callback_last,
-        lr_callback,
-        lr_logger
-    ],
+    callbacks = callbacks,
     logger=wandb_logger,
 )
 

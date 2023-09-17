@@ -1,5 +1,6 @@
 import os
 from .acumen_metrics import MetricCollection, Metric
+import torch
 
 class AcumenEvaluator(object):
     def __init__(self, args, model, evaluator_args = None, logger = None):
@@ -24,9 +25,11 @@ class AcumenEvaluator(object):
 
         return self.trainer.logger
 
+    @torch.no_grad()
     def evaluate(self):
         raise NotImplementedError
 
+    @torch.no_grad()
     def trainer_evaluate(self, global_step = -1):
         raise NotImplementedError
 
@@ -43,5 +46,3 @@ class AcumenEvaluator(object):
                 metric_collection.append(Metric(name = key, value = value))
 
         metric_collection.log(self._logger)
-        # for key, value in values.items():
-        #     self.logger.log(f'{evaluator.__class__.__name__}_{key}', value, on_step = False, force_log = True)

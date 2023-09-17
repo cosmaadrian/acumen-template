@@ -9,6 +9,11 @@ from .loggers import NoLogger
 import lib
 import constants
 
+from colorama import init as colorama_init
+from colorama import Fore
+from colorama import Style
+
+colorama_init()
 
 class NotALightningTrainer():
 
@@ -61,9 +66,8 @@ class NotALightningTrainer():
             # distributed data parallel?? No, cuz we're poor students.
             model.model = nn.DataParallel(model.model)
             model.model = model.model.to(lib.device)
-
         try:
-            summary(self.model_hook, input_shape = self.model_hook.INPUT_SHAPE)
+            summary(self.model_hook)
         except Exception as e:
             print("::: ⚠️WARNING⚠️ could not create model summary ::: ", e)
 
@@ -80,7 +84,7 @@ class NotALightningTrainer():
             for callback in self.callbacks:
                 callback.on_epoch_start()
 
-            pbar = tqdm.tqdm(train_dataloader, total = len(train_dataloader))
+            pbar = tqdm.tqdm(train_dataloader, total = len(train_dataloader), colour = 'cyan')
 
             model.training_epoch_start(epoch)
             for i, data in enumerate(pbar):
@@ -90,7 +94,8 @@ class NotALightningTrainer():
                     callback.on_batch_start()
 
                 for key in data.keys():
-                    data[key] = data[key].to(lib.device)
+                    if isinstance(data[key], torch.Tensor):
+                        data[key] = data[key].to(lib.device)
 
                 # Autocast to automatically save memory with marginal loss of performance
                 with torch.cuda.amp.autocast(enabled = bool(self.args.use_amp)):
@@ -112,13 +117,21 @@ class NotALightningTrainer():
                     for callback in self.callbacks:
                         callback.on_batch_end()
 
-                pbar.set_description(f'Epoch {self.epoch} / {self.args.epochs} | ' + ' | '.join([f'{k}={np.round(v, 4)}' for k,v in self.logger.on_step_metrics.items()]))
+                    model.training_batch_end()
+
+                progress_string = f'[{Fore.GREEN}{self.args.group}{Style.RESET_ALL}:{Fore.RED}{self.args.name}{Style.RESET_ALL}] ' + \
+                    f'Epoch {self.epoch} / {self.args.epochs} | ' + ' | '.join([
+                    f'{k}={np.round(v, 4)}' for k,v in self.logger.on_step_metrics.items()
+                ])
+
+                pbar.set_description(progress_string)
                 if self.args.debug:
                     print("[🐞DEBUG MODE🐞] Breaking after one batch ... ")
                     break
 
-            model.training_epoch_end()
+            model.training_epoch_end(epoch)
             self.epoch += 1
+            self.logger.log('epoch', self.epoch, on_step = False, force_log = True)
 
             if (self.epoch + 1) % self.args.eval_every == 0:
                 self.model_hook.train(False)

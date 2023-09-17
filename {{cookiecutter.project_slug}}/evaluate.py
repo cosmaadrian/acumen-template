@@ -1,12 +1,19 @@
 import yaml
 import pprint
+from easydict import EasyDict
 
-import nomenclature
+from lib import nomenclature
+from lib import device
+
 from lib.arg_utils import define_args
-from lib.utils import load_model
+from lib.utils import load_model, load_config
 from lib.loggers import NoLogger
+from lib.forge import VersionCommand
+
+VersionCommand().run()
 
 args = define_args(
+    require_config_file = False,
     extra_args = [
         ('--eval_config', {'default': '', 'type': str, 'required': True}),
         ('--output_dir', {'default': '', 'type': str, 'required': True}),
@@ -14,7 +21,10 @@ args = define_args(
     ])
 
 with open(args.eval_config, 'rt') as f:
-    eval_cfg = yaml.load(f, Loader = yaml.FullLoader)
+    eval_cfg = EasyDict(yaml.load(f, Loader = yaml.FullLoader))
+
+model_config = load_config(args)
+args = EasyDict({**model_config, **args})
 
 architecture = nomenclature.MODELS[args.model](args)
 
@@ -27,7 +37,7 @@ state_dict = {
 architecture.load_state_dict(state_dict)
 architecture.eval()
 architecture.train(False)
-architecture.to(nomenclature.device)
+architecture.to(device)
 
 evaluators = [
     nomenclature.EVALUATORS[evaluator_args.name](args, architecture, evaluator_args.args, logger = NoLogger())

@@ -1,4 +1,5 @@
 import wandb
+from collections import defaultdict
 
 # TODO
 # log only min / log only max / log both
@@ -10,6 +11,9 @@ class WandbLogger(object):
         self.trainer = None
 
         self.metrics = dict()
+
+        self.min_values = defaultdict(lambda: 10000)
+        self.max_values = defaultdict(lambda: -1)
 
     def watch(self, model):
         wandb.watch(model)
@@ -24,7 +28,7 @@ class WandbLogger(object):
             if wandb.run is not None:
                 wandb.log(log_dict, step = self.trainer.global_step)
 
-    def log(self, key, value, on_step = True, force_log = False):
+    def log(self, key, value, on_step = True, force_log = False, log_extremes = False):
         self.metrics[key] = value
 
         if on_step:
@@ -32,5 +36,16 @@ class WandbLogger(object):
 
         if (self.trainer.global_step % self.trainer.args.log_every == 0) or force_log:
             if wandb.run is not None:
-                wandb.log({key: value}, step = self.trainer.global_step)
+                log_dict = {
+                    key: value
+                }
 
+                if log_extremes:
+                    self.min_values[key] = min(self.min_values[key], value)
+                    self.max_values[key] = max(self.max_values[key], value)
+
+                    log_dict[key + ':min'] = self.min_values[key]
+                    log_dict[key + ':max'] = self.max_values[key]
+
+
+                wandb.log(log_dict, step = self.trainer.global_step)

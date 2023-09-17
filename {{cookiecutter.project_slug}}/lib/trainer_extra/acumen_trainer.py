@@ -29,6 +29,12 @@ class AcumenTrainer(object):
 
     def training_epoch_end(self, epoch = None):
         pass
+    
+    def training_batch_start(self, batch = None):
+        pass
+
+    def training_batch_end(self, batch = None):
+        pass
 
     def training_epoch_start(self, epoch = None):
         pass
