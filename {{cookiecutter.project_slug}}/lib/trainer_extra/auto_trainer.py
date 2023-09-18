@@ -33,11 +33,11 @@ class AutoTrainer(AcumenTrainer):
 
             losses = losses + loss
 
-            self.log(f'train/loss:{head_name}', loss.item())
+            self.log(f'train/{head_name}@loss', loss.item())
 
         final_loss = losses / len(outputs.keys())
 
         if len(outputs.keys()) > 1:
-            self.log('train/loss:final', final_loss.item(), on_step = True)
+            self.log('train/total_loss', final_loss.item(), on_step = True)
 
         return final_loss

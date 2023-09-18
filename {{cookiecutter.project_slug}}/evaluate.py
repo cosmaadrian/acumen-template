@@ -1,3 +1,4 @@
+import torch
 import yaml
 import pprint
 from easydict import EasyDict
@@ -49,7 +50,8 @@ evaluators = [
     for evaluator_args in eval_cfg['evaluators']
 ]
 
-for evaluator in evaluators:
-    results = evaluator.evaluate(save = True)
-    print(evaluator.__class__.__name__)
-    pprint.pprint(results)
+with torch.cuda.amp.autocast(enabled = bool(args.use_amp)):
+    for evaluator in evaluators:
+        results = evaluator.evaluate(save = True)
+        print(evaluator.__class__.__name__)
+        pprint.pprint(results)

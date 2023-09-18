@@ -1,7 +1,9 @@
 import easydict
 
 from .model_extra import CoralHead, ClassificationHead, CoralLoss, AcumenBinaryCrossEntropy, AcumenCrossEntropy, MultiLabelHead
-from .trainer_extra import *
+from .trainer_extra import AutoTrainer
+from .evaluator_extra import AcumenClassificationEvaluator
+
 
 NOMENCLATURE = easydict.EasyDict({
 	'TRAINERS': {
@@ -20,14 +22,11 @@ NOMENCLATURE = easydict.EasyDict({
         'bce': AcumenBinaryCrossEntropy,
 	},
 
-	'DATASETS': {
-	},
-
-	'MODELS': {
-	},
+	'DATASETS': {},
+	'MODELS': {},
 
 	'EVALUATORS': {
-        # TODO classification evaluator
+        'auto-classification': AcumenClassificationEvaluator,
 	},
 })
 
@@ -37,7 +36,7 @@ import nomenclature
 
 # Merging with user stuff.
 
-for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS', 'HEADS']:
+for actor_type in ['MODELS', 'TRAINERS', 'DATASETS', 'EVALUATORS', 'HEADS', 'LOSSES']:
 	if actor_type not in nomenclature.__dict__:
 		continue
 
