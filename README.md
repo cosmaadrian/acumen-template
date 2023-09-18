@@ -1,5 +1,7 @@
 <h1 align="center"><span style="font-weight:normal"> <img src="assets/icon.png" alt="drawing" style="width:30px;"/> Acumen ✨ Template ✨</h1>
 
+[![DOI](https://zenodo.org/badge/478557014.svg)](https://zenodo.org/badge/latestdoi/478557014)
+
 Before starting any deep learning research project, use this template to make your life as a researcher easier.
 
 Keep your sanity! Work with `wandb` (included by default)!
@@ -98,3 +100,19 @@ To keep your project updated with the latest `lib/` folder, just run the command
 ```
 
 This command will override the lib folder with the latest changes. **WARNING. Any changes you made to `lib/` will be lost.**
+
+### 🎓 Citation
+
+If you used this template in your projects, please cite this repository:
+
+```
+@software{cosma23acumen,
+  author = {Cosma, Adrian},
+  doi = {10.5281/zenodo.8356189},
+  month = {9},
+  title = {{AcumenTemplate}},
+  url = {https://github.com/cosmaadrian/acumen-template},
+  version = {0.1.1},
+  year = {2023}
+}
+```
