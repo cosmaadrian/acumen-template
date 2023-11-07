@@ -213,7 +213,7 @@ def define_args(extra_args = None, verbose = True, require_config_file = True):
         print("[🐞DEBUG MODE🐞] Changing WANDB_MODE to 'dryrun'",)
         args.mode = 'dryrun'
 
-    if args.seed != -1:
+    if 'seed' in args and args.seed != -1:
         output_string += '##################################################\n'
         output_string += f'########🌱🌱🌱 Setting random seed to {args.seed} 🌱🌱🌱########\n'
         output_string += '##################################################\n'
