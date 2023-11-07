@@ -8,8 +8,14 @@ import json
 
 # TODO add function to load checkpoint, optimizer and config.
 
-def load_model(args):
-    checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/../checkpoints/{args.group}:{args.name}/{args.checkpoint_kind}/*model.ckpt'
+def load_model(name = None, group = None, checkpoint_kind = 'best', checkpoint_path = None):
+    if checkpoint_path is not None and (name is not None or group is not None):
+        raise ValueError("checkpoint_path and name/group cannot be used together")
+
+    if checkpoint_path is None:
+        checkpoint_path = f'{group}:{name}/{checkpoint_kind}/'
+
+    checkpoint_path = f'{os.path.abspath(os.path.dirname(__file__))}/../{checkpoint_path}/*model.ckpt'
     print("::: Loading model from", checkpoint_path)
     checkpoints = glob.glob(checkpoint_path)
 
@@ -21,8 +27,14 @@ def load_model(args):
 
     return state_dict
 
-def load_config(args):
-    config_path = f'{os.path.abspath(os.path.dirname(__file__))}/../checkpoints/{args.group}:{args.name}/{args.checkpoint_kind}/*config.json'
+def load_config(name = None, group = None, checkpoint_kind = 'best', checkpoint_path = None):
+    if checkpoint_path is not None and (name is not None or group is not None):
+        raise ValueError("checkpoint_path and name/group cannot be used together")
+
+    if checkpoint_path is None:
+        checkpoint_path = f'{group}:{name}/{checkpoint_kind}/'
+
+    config_path = f'{os.path.abspath(os.path.dirname(__file__))}/../{checkpoint_path}/*config.json'
     print("::: Loading config from", config_path)
     configs = glob.glob(config_path)
 
@@ -32,5 +44,5 @@ def load_config(args):
     except Exception as e:
         print("No configs found: ", config_path)
         raise e
-    
+
     return config
