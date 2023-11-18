@@ -7,6 +7,8 @@ import requests
 import random
 from git.repo.base import Repo
 import shutil
+import argparse
+
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 
@@ -102,14 +104,21 @@ class VersionCommand(Command):
 
 class UpdateCommand(Command):
     name = "update"
-    description = "Update the \"lib/\" to the latest version."
+    description = "Update the \"lib/\" to the latest version. Use `python lib/forge.py update force` to force an update"
 
     def run(self, args):
+        # dosent work properly, fix it later
+        # parser = argparse.ArgumentParser(description='Do stuff.')
+        # parser.add_argument('--force', action = 'store_true')
+        # args = parser.parse_args(['--force'])
+
+        force = '--force' in args
+
         local_lib_path = os.path.dirname(os.path.abspath(__file__))
         clone_path = os.path.join(local_lib_path[:-3], 'acumen_template')
 
         current_version, latest_version = check_version(verbose = False)
-        if current_version == latest_version:
+        if current_version == latest_version and not force:
             print("Already up to date.")
             return
 

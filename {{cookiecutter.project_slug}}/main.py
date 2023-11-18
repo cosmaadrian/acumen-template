@@ -73,8 +73,8 @@ if args.debug:
     checkpoint_callback_best.actually_save = False
     checkpoint_callback_last.actually_save = False
 else:
-    checkpoint_callback_best.actually_save = bool(args.save_model)
-    checkpoint_callback_last.actually_save = bool(args.save_model)
+    checkpoint_callback_best.actually_save = bool(args.model_checkpoint.save_model)
+    checkpoint_callback_last.actually_save = bool(args.model_checkpoint.save_model)
 
 callbacks = [
     checkpoint_callback_best,

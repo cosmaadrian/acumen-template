@@ -35,10 +35,10 @@ class ModelCheckpoint(Callback):
 
         self.saved_config = False
 
-        if not bool(self.args.override_checkpoints):
+        if not bool(self.args.model_checkpoint.override_checkpoints):
             # check if directory exists and is empty
             if os.path.exists(self.dirpath) and os.listdir(self.dirpath):
-                raise Exception(f"⚠️ Directory {self.dirpath} exists and is not empty.")
+                raise Exception(f"⚠️ [{name}] Directory {self.dirpath} exists and is not empty.")
 
     def on_epoch_end(self):
         if self.trainer.epoch < self.start_counting_at:

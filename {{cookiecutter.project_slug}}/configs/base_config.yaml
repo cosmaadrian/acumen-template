@@ -22,9 +22,9 @@ max_grad_norm: 1.5
 eval_every: 1
 log_every: 5
 
-save_model: 1
-override_checkpoints: 0
 model_checkpoint:
+  save_model: 1
+  override_checkpoints: 0
   monitor_quantity: <TODO>
   direction: up
 
