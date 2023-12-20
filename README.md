@@ -12,6 +12,7 @@ Coded with love and coffee ☕ by [Adrian Cosma](https://scholar.google.com/cita
 
 ### Open Source projects that used **✨ The Template ✨**
 
+-  [Reading Between the 🎞️ Frames: Multi-Modal Depression Detection in Videos from Non-Verbal Cues](https://github.com/cosmaadrian/multimodal-depression-from-video)
 -  [It’s Just a Matter of Time: Detecting Depression with Time-Enriched Multimodal Transformers](https://github.com/cosmaadrian/time-enriched-multimodal-depression-detection)
 -  [Learning Gait Representations with Noisy Multi-Task Learning](https://github.com/cosmaadrian/gaitformer)
 -  [Exploring Self-Supervised Vision Transformers for Gait Recognition in the Wild](https://github.com/cosmaadrian/gait-vit)
