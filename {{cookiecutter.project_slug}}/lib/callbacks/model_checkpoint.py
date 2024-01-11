@@ -45,7 +45,7 @@ class ModelCheckpoint(Callback):
             return
 
         if self.monitor not in self.trainer.logger.metrics:
-            print(f"[ModelCheckpoint] ⚠️ Metric {self.monitor} not found in logger. Skipping checkpoint.")
+            print(f"[{self.name}] ⚠️ Metric {self.monitor} not found in logger. Skipping checkpoint.")
             return
 
         trainer_quantity = self.trainer.logger.metrics[self.monitor]
@@ -53,11 +53,11 @@ class ModelCheckpoint(Callback):
         if self.previous_best is not None and self.save_best_only:
             if self.direction == 'down':
                 if self.previous_best <= trainer_quantity:
-                    print(f"No improvement. Current: {trainer_quantity} - Previous {self.previous_best}")
+                    print(f"[{self.name}] No improvement. Current: {trainer_quantity} - Previous {self.previous_best}")
                     return
             else:
                 if self.previous_best >= trainer_quantity:
-                    print(f"No improvement. Current: {trainer_quantity} - Previous {self.previous_best}")
+                    print(f"[{self.name}] No improvement. Current: {trainer_quantity} - Previous {self.previous_best}")
                     return
 
 
@@ -70,8 +70,15 @@ class ModelCheckpoint(Callback):
             previous_model_path = self.previous_best_path + '.model.ckpt'
 
             if self.actually_save:
-                os.unlink(previous_model_path)
-                os.unlink(previous_optimizer_path)
+                if os.path.exists(previous_model_path):
+                    os.unlink(previous_model_path)
+                else:
+                    print(f"WARNING: [{self.name}] Previous model path {previous_model_path} not found.")
+
+                if os.path.exists(previous_optimizer_path):
+                    os.unlink(previous_optimizer_path)
+                else:
+                    print(f"WARNING: [{self.name}] Previous optimizer path {previous_model_path} not found.")
 
         if self.actually_save:
             print(f"[{self.name}] Saving model to: {path}")
