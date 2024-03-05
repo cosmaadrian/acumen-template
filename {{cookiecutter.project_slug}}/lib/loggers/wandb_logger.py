@@ -25,7 +25,7 @@ class WandbLogger(object):
             if wandb.run is not None:
                 wandb.log(log_dict, step = self.trainer.global_step)
 
-    def log(self, key, value, on_step = True, force_log = False, log_min = False, log_max = False, log_instant = False):
+    def log(self, key, value, on_step = True, force_log = False, log_min = False, log_max = False, log_instant = True):
         self.metrics[key] = value
 
         if on_step:
