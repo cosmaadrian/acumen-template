@@ -1,11 +1,11 @@
 import torch
 from torch import nn
-from torchinfo import summary
 
 import numpy as np
 import tqdm
 
 from .loggers import NoLogger
+from .evaluator_extra import MetricCollection
 import lib
 
 from colorama import init as colorama_init
@@ -44,17 +44,39 @@ class NotALightningTrainer():
         self.model_hook = None
         self.scaler = None
 
-
     def stop(self):
         self.should_stop = True
+
+    def run_evaluation(self):
+        aggregation_evaluators = [evaluator for evaluator in self.evaluators if evaluator.is_aggregator]
+        non_aggregation = [evaluator for evaluator in self.evaluators if not evaluator.is_aggregator]
+
+        if len(aggregation_evaluators):
+            metric_collection = MetricCollection()
+
+        self.model_hook.train(False)
+        with torch.no_grad():
+            for evaluator in non_aggregation:
+                print(f'[{evaluator.display_name}] Running evaluation ...')
+                evaluator.evaluate_and_log(self.global_step)
+
+                if len(aggregation_evaluators):
+                    metric_collection.extend(evaluator.current_metric_collection)
+
+            for agg_evaluator in aggregation_evaluators:
+                agg_evaluator.evaluate_and_log(self.global_step, metrics = metric_collection)
+
+        self.model_hook.train(True)
 
     def fit(self, model, train_dataloader, evaluators = None):
         model.log = self.logger.log
 
-        if evaluators is None:
-            evaluators = []
+        self.evaluators = evaluators
 
-        for evaluator in evaluators:
+        if self.evaluators is None:
+            self.evaluators = []
+
+        for evaluator in self.evaluators:
             evaluator.trainer = self
 
         self.optimizer = model.configure_optimizers()
@@ -65,10 +87,6 @@ class NotALightningTrainer():
             # distributed data parallel?? No, cuz we're poor students.
             model.model = nn.DataParallel(model.model)
             model.model = model.model.to(lib.device)
-        try:
-            summary(self.model_hook)
-        except Exception as e:
-            print("::: ⚠️WARNING⚠️ could not create model summary ::: ", e)
 
         self.logger.watch(self.model_hook)
 
@@ -94,7 +112,7 @@ class NotALightningTrainer():
 
                 for key in data.keys():
                     if isinstance(data[key], torch.Tensor):
-                        data[key] = data[key].to(lib.device)
+                        data[key] = data[key].to(lib.device, non_blocking = True)
 
                 # Autocast to automatically save memory with marginal loss of performance
                 with torch.cuda.amp.autocast(enabled = bool(self.args.use_amp)):
@@ -129,18 +147,24 @@ class NotALightningTrainer():
                     print("[🐞DEBUG MODE🐞] Breaking after one batch ... ")
                     break
 
+                ##############################################################
+                ##############################################################
+                if self.args.eval_every_batches != -1 and (self.global_step % self.args.eval_every_batches == 0):
+                    print(f":::: Evaluating every {self.args.eval_every_batches} ::::")
+
+                    self.run_evaluation()
+
+                    for callback in self.callbacks:
+                        callback.on_epoch_end()
+                ##############################################################
+                ##############################################################
+
             model.training_epoch_end(epoch)
             self.epoch += 1
             self.logger.log('epoch', self.epoch, on_step = False, force_log = True)
 
             if (self.epoch + 1) % self.args.eval_every == 0:
-                self.model_hook.train(False)
-                with torch.no_grad():
-                    for evaluator in evaluators:
-                        print(f'[{evaluator.display_name}] Running evaluation ...')
-                        evaluator.evaluate_and_log(self.global_step)
-
-                self.model_hook.train(True)
+                self.run_evaluation()
 
             for callback in self.callbacks:
                 callback.on_epoch_end()
