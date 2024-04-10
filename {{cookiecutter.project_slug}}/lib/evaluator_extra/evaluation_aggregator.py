@@ -2,8 +2,9 @@ import torch
 import numpy as np
 from scipy.stats.mstats import gmean, hmean
 
-from .acumen_metrics import MetricCollection, Metric
+from .acumen_metrics import Metric
 from .acumen_evaluator import AcumenEvaluator
+
 
 class AcumenEvaluationAggregator(AcumenEvaluator):
     def __init__(self, args, model, evaluator_args = None, logger = None):
@@ -19,6 +20,9 @@ class AcumenEvaluationAggregator(AcumenEvaluator):
 
     @property
     def display_name(self):
+        if 'display_name' in self.evaluator_args:
+            return self.evaluator_args.display_name
+
         return 'aggregated'
 
     @torch.no_grad()
