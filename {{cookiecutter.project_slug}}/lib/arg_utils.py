@@ -170,12 +170,13 @@ def define_args(extra_args = None, verbose = True, require_config_file = True):
     parser.add_argument('--name', type = str, default = 'test')
     parser.add_argument('--group', type = str, default = 'default')
     parser.add_argument('--notes', type = str, default = '')
-    parser.add_argument("--mode", type = str, default = 'dryrun')
+    parser.add_argument("--mode", type = str, default = 'run')
     parser.add_argument("--debug", type = int, default = 0)
 
     parser.add_argument('--use_amp', type = int, default = 1, required = False)
 
-    parser.add_argument('--env', type = str, default = socket.gethostname())
+    # TODO?
+    # parser.add_argument('--env', type = str, default = '')
 
     if extra_args is not None:
         for name, arguments in extra_args:
@@ -193,10 +194,19 @@ def define_args(extra_args = None, verbose = True, require_config_file = True):
     nested_args = unflatten_dict_keys({}, flattened_args)
     args = easydict.EasyDict(nested_args)
 
+    if args.env == '':
+        raise Exception("No environment provided!")
+
     if os.path.exists('configs/env_config.yaml'):
         with open('configs/env_config.yaml', 'rt', encoding="utf8") as fd:
             env_cfg = yaml.load(fd, Loader = yaml.FullLoader)
+
+        if args.env not in env_cfg:
+            raise Exception(f'{args.env} not found in env_config.yaml! Configured environments: {list(env_cfg.keys())}')
+
         args.environment = env_cfg[args.env]
+
+    output_string = ""
 
     if args.debug:
         output_string =  "#############################\n"
