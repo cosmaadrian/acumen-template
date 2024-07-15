@@ -124,6 +124,15 @@ class NotALightningTrainer():
                 if (i + 1) % self.args.accumulation_steps == 0:
                     self.scaler.unscale_(self.optimizer)
 
+                     if self.args.log_grads:
+                        grads = [
+                            param.grad.detach().flatten()
+                            for param in self.model_hook.parameters()
+                            if param.grad is not None
+                        ]
+                        norm = torch.cat(grads).norm().item()
+                        self.logger.log('norm', norm, on_step = False, force_log = False)
+
                     if bool(self.args.clip_grad_norm):
                         torch.nn.utils.clip_grad_norm_(self.model_hook.parameters(), self.args.max_grad_norm)
 
