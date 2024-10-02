@@ -11,7 +11,7 @@ Coded with love and coffee ☕ by [Adrian Cosma](https://scholar.google.com/cita
 <a href="https://www.buymeacoffee.com/cosmadrian" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 
 ### Open Source projects that used **✨ The Template ✨**
-
+- [How Hard is this Test Set? NLI Characterization by Exploiting Training Dynamics](https://github.com/cosmaadrian/nli-stress-test)
 -  [Reading Between the 🎞️ Frames: Multi-Modal Depression Detection in Videos from Non-Verbal Cues](https://github.com/cosmaadrian/multimodal-depression-from-video)
 -  [It’s Just a Matter of Time: Detecting Depression with Time-Enriched Multimodal Transformers](https://github.com/cosmaadrian/time-enriched-multimodal-depression-detection)
 -  [Learning Gait Representations with Noisy Multi-Task Learning](https://github.com/cosmaadrian/gaitformer)
